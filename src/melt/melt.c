@@ -36,6 +36,7 @@
 #endif
 
 #include "io.h"
+#include <config_mlt.h>
 
 static mlt_producer melt = NULL;
 

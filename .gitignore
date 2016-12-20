@@ -29,3 +29,5 @@ mlt-config
 packages.dat
 make.inc
 src/examples/play
+build/*
+.idea/*

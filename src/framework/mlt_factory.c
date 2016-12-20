@@ -20,6 +20,7 @@
  */
 
 #include "mlt.h"
+#include "config_mlt.h"
 #include "mlt_repository.h"
 
 #include <stdio.h>
@@ -32,23 +33,23 @@
 #define PRESETS_DIR "/presets"
 
 #ifdef _WIN32
-#ifdef PREFIX_LIB
-#undef PREFIX_LIB
-#endif
-#ifdef PREFIX_DATA
-#undef PREFIX_DATA
-#endif
-#include <windows.h>
-/** the default subdirectory of the libdir for holding modules (plugins) */
-#define PREFIX_LIB "\\lib\\mlt"
-/** the default subdirectory of the install prefix for holding module (plugin) data */
-#define PREFIX_DATA "\\share\\mlt"
+	#ifdef PREFIX_LIB
+		#undef PREFIX_LIB
+	#endif
+	#ifdef PREFIX_DATA
+		#undef PREFIX_DATA
+	#endif
+	#include <windows.h>
+	/** the default subdirectory of the libdir for holding modules (plugins) */
+	#define PREFIX_LIB "\\lib\\mlt"
+	/** the default subdirectory of the install prefix for holding module (plugin) data */
+	#define PREFIX_DATA "\\share\\mlt"
 #elif defined(__APPLE__) && defined(RELOCATABLE)
-#include <mach-o/dyld.h>
-/** the default subdirectory of the libdir for holding modules (plugins) */
-#define PREFIX_LIB "/lib/mlt"
-/** the default subdirectory of the install prefix for holding module (plugin) data */
-#define PREFIX_DATA "/share/mlt"
+	#include <mach-o/dyld.h>
+	/** the default subdirectory of the libdir for holding modules (plugins) */
+	#define PREFIX_LIB "/lib/mlt"
+	/** the default subdirectory of the install prefix for holding module (plugin) data */
+	#define PREFIX_DATA "/share/mlt"
 #endif
 
 /** holds the full path to the modules directory - initialized and retained for the entire session */

@@ -1,0 +1,4 @@
+
+#cmakedefine VERSION "6.5.0"
+#cmakedefine PREFIX_LIB "lib/mlt"
+#cmakedefine PREFIX_DATA "share/mlt"

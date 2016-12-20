@@ -20,7 +20,7 @@
 #include "common.h"
 #include <framework/mlt.h>
 #include <QApplication>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QtGlobal>
