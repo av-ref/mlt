@@ -5,6 +5,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_MODULE_PATH ${CMAKE_PREFIX_PATH}  ${CMAKE_CURRENT_SOURCE_DIR}/cmake  )
+
+message( "path in cmake_prefix_path" )
+foreach( path ${CMAKE_PREFIX_PATH} )
+    message( ${path} )
+endforeach( path )
 
 project(mlt)
 
