@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2011 Dan Dennedy <dan@dennedy.org>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -76,8 +76,8 @@ void MainWindow::initializeMlt ()
 
     mlt->init ();
     // Load a color producer to clear the video region with black.
-    mlt->open ("color:");
-    pause ();
+//    mlt->open ("color:");
+//    pause ();
 
     ui->statusBar->showMessage (tr("Ready"));
 }

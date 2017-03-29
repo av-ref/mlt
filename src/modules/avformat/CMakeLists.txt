@@ -18,16 +18,16 @@ add_definitions( -DFILTERS -DCODECS -DAVDEVICE -DAVFILTER)
 
 include_directories(${FFmpeg_INCLUDE_DIRS})
 
-add_library(mltffmpeg MODULE ${SRCS} )
+add_library(avformat MODULE ${SRCS} )
 
-target_link_libraries(mltffmpeg mlt  ${FFmpeg_LIBRARIES})
+target_link_libraries(avformat mlt  ${FFmpeg_LIBRARIES})
 
-set_target_properties( mltffmpeg
+set_target_properties( avformat
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${MLT_MODULE_DIRECTORY}
         )
 
 add_custom_command(
-        TARGET mltffmpeg
+        TARGET avformat
         POST_BUILD
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt

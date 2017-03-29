@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2011 Dan Dennedy <dan@dennedy.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +23,9 @@
 #include "mltcontroller.h"
 #include <QWidget>
 #include <QPalette>
-
+#include <QApplication>
+#include <QDir>
+#include <QDebug>
 MltController::MltController(QObject *parent)
     : QObject (parent)
     , m_profile (0)
@@ -40,7 +42,13 @@ MltController::~MltController ()
 
 void MltController::init ()
 {
-    Mlt::Factory::init("/home/tom/workspace.nl/mlt/build/lib/mlt");
+    QDir dir(QApplication::applicationDirPath());
+//    qDebug()<< dir.currentPath();
+    dir.cdUp();
+    dir.cd("lib");
+    dir.cd("mlt");
+    Mlt::Factory::init(dir.path().toStdString().c_str());
+    Mlt::Factory::init();
 }
 
 int MltController::open (const char* url, const char* profile)
@@ -69,7 +77,7 @@ int MltController::open (const char* url, const char* profile)
         // sdl_preview does not work good on Windows
         m_consumer = new Mlt::Consumer (*m_profile, "sdl");
 #else
-        m_consumer = new Mlt::Consumer (*m_profile, "sdl_preview");
+        m_consumer = new Mlt::Consumer (*m_profile, "avformat");
 #endif
         if (m_consumer->is_valid ()) {
             // Embed the SDL window in our GUI.

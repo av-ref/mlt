@@ -33,3 +33,6 @@ make.inc
 src/examples/play
 build/*
 .idea/*
+*.project
+/.cproject
+/CMakeLists.txt.user

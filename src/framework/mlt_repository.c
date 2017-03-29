@@ -75,6 +75,7 @@ mlt_repository mlt_repository_init( const char *directory )
 	// Get the directory list
 	mlt_properties dir = mlt_properties_new();
 	int count = mlt_properties_dir_list( dir, directory, NULL, 0 );
+	mlt_log_warning( NULL, "%s: mlt properties count =  %d\n", __FUNCTION__, count );
 	int i;
 	int plugin_count = 0;
 
@@ -95,6 +96,7 @@ mlt_repository mlt_repository_init( const char *directory )
 	{
 		int flags = RTLD_NOW;
 		const char *object_name = mlt_properties_get_value( dir, i);
+		mlt_log_warning( NULL, "%s: mlt object_name =  %s\n", __FUNCTION__, object_name );
 
 		// Very temporary hack to allow the quicktime plugins to work
 		// TODO: extend repository to allow this to be used on a case by case basis
