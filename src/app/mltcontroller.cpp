@@ -40,7 +40,7 @@ MltController::~MltController ()
 
 void MltController::init ()
 {
-    Mlt::Factory::init();
+    Mlt::Factory::init("/home/tom/workspace.nl/mlt/build/lib/mlt");
 }
 
 int MltController::open (const char* url, const char* profile)

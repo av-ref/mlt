@@ -25,6 +25,7 @@
 #include <QFileDialog>
 #include <QVBoxLayout>
 #include "FrameWdg.h"
+#include <QLineEdit>
 
 MainWindow::MainWindow (QWidget *parent)
     : QMainWindow (parent)
@@ -52,6 +53,7 @@ MainWindow::MainWindow (QWidget *parent)
 //#ifdef Q_WS_MAC
     gl = new FrameWdg (this);
     QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(new QLineEdit(ui->centralWidget));
     layout->addWidget (gl);
     layout->setMargin (0);
     ui->centralWidget->setLayout (layout);
@@ -126,8 +128,8 @@ void MainWindow::forceResize()
 
 void MainWindow::onShowFrame (void* frame, unsigned position)
 {
-#ifdef Q_WS_MAC
+//#ifdef Q_WS_MAC
     emit showImageSignal (mlt->getImage (frame));
-#endif
+//#endif
     ui->statusBar->showMessage (QString().sprintf ("%.3f", position / mlt->profile()->fps()));
 }

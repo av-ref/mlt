@@ -20,7 +20,6 @@
 #define __STDC_FORMAT_MACROS  /* see inttypes.h */
 #define __STDC_LIMIT_MACROS
 #define __STDC_CONSTANT_MACROS
-#define _XOPEN_SOURCE
 
 #include <stdint.h>
 #include <inttypes.h>
@@ -40,12 +39,11 @@
 
 typedef struct
 {
-	struct mlt_producer_s parent;
+	mlt_producer parent;
 	int f_running, f_exit, f_timeout;
 	char* arg;
 	pthread_t th;
 	int count;
-	mlt_slices sliced_swab;
 	mlt_deque a_queue, v_queue;
 	pthread_mutex_t lock;
 	pthread_cond_t cond;
@@ -80,7 +78,7 @@ static void* producer_ndi_feeder( void* p )
 	mlt_log_debug( MLT_PRODUCER_SERVICE( producer ), "%s: waiting for source [%s]\n", __FUNCTION__, self->arg );
 	for ( i = -1; !self->f_exit && -1 == i; )
 	{
-		int c = 0, j;
+		unsigned int c = 0, j;
 
 		// wait for sources
 		ndi_srcs = NDIlib_find_get_sources( ndi_find, &c, 100 );
@@ -114,7 +112,7 @@ static void* producer_ndi_feeder( void* p )
 	NDIlib_recv_create_t recv_create_desc =
 	{
 		ndi_srcs[ i ],
-		NDIlib_recv_color_format_UYVY_BGRA,
+		NDIlib_recv_color_format_e_UYVY_RGBA,
 		NDIlib_recv_bandwidth_highest,
 		true
 	};
@@ -147,6 +145,8 @@ static void* producer_ndi_feeder( void* p )
 ////fprintf(stderr, "%s:%d: NDIlib_recv_capture....\n", __FUNCTION__, __LINE__ );
 		t = NDIlib_recv_capture(self->recv, video, audio, meta, 10 );
 ////fprintf(stderr, "%s:%d: NDIlib_recv_capture=%d\n", __FUNCTION__, __LINE__, t );
+
+		mlt_log_debug( NULL, "%s:%d: NDIlib_recv_capture=%d\n", __FILE__, __LINE__, t );
 
 		switch( t )
 		{
@@ -216,7 +216,7 @@ static int get_audio( mlt_frame frame, int16_t **buffer, mlt_audio_format *forma
 	NDIlib_recv_instance_t recv = mlt_properties_get_data( fprops, "ndi_recv", NULL );
 	NDIlib_audio_frame_t* audio = mlt_properties_get_data( fprops, "ndi_audio", NULL );
 
-	mlt_log_debug( NULL, "%s: recv=%p, audio=%p\n", __FUNCTION__, recv, audio );
+	mlt_log_debug( NULL, "%s:%d: recv=%p, audio=%p\n", __FILE__, __LINE__, recv, audio );
 
 	if ( recv && audio )
 	{
@@ -248,7 +248,7 @@ static int get_image( mlt_frame frame, uint8_t **buffer, mlt_image_format *forma
 	NDIlib_recv_instance_t recv = mlt_properties_get_data( fprops, "ndi_recv", NULL );
 	NDIlib_video_frame_t* video = mlt_properties_get_data( fprops, "ndi_video", NULL );
 
-	mlt_log_debug( NULL, "%s: recv=%p, video=%p\n", __FUNCTION__, recv, video );
+	mlt_log_debug( NULL, "%s:%d: recv=%p, video=%p\n", __FILE__, __LINE__, recv, video );
 
 	if ( recv && video )
 	{
@@ -264,7 +264,7 @@ static int get_image( mlt_frame frame, uint8_t **buffer, mlt_image_format *forma
 			dst_stride = 2 * video->xres;
 			*format = mlt_image_yuv422;
 		}
-		else if ( NDIlib_FourCC_type_BGRA == video->FourCC )
+		else if ( NDIlib_FourCC_type_RGBA == video->FourCC || NDIlib_FourCC_type_RGBX == video->FourCC )
 		{
 			dst_stride = 4 * video->xres;
 			*format = mlt_image_rgb24a;
@@ -282,7 +282,7 @@ static int get_image( mlt_frame frame, uint8_t **buffer, mlt_image_format *forma
 		if ( NDIlib_FourCC_type_UYVY == video->FourCC  || NDIlib_FourCC_type_UYVA == video->FourCC )
 			for( j = 0; j < video->yres; j++)
 				swab2( video->p_data + j * video->line_stride_in_bytes, dst + j * dst_stride, stride );
-		else if ( NDIlib_FourCC_type_BGRA == video->FourCC )
+		else if ( NDIlib_FourCC_type_RGBA == video->FourCC || NDIlib_FourCC_type_RGBX == video->FourCC )
 			for( j = 0; j < video->yres; j++)
 				memcpy( dst + j * dst_stride, video->p_data + j * video->line_stride_in_bytes, stride );
 
@@ -307,7 +307,10 @@ static int get_image( mlt_frame frame, uint8_t **buffer, mlt_image_format *forma
 			mlt_frame_set_alpha( frame, (uint8_t*) dst, size, (mlt_destructor)mlt_pool_release );
 		}
 
-		mlt_properties_set_int( fprops, "progressive", video->frame_format_type );
+		mlt_properties_set_int( fprops, "progressive",
+			( video->frame_format_type == NDIlib_frame_format_type_progressive ) );
+		mlt_properties_set_int( fprops, "top_field_first",
+			( video->frame_format_type == NDIlib_frame_format_type_interleaved ) );
 
 		NDIlib_recv_free_video( recv, video );
 	}
@@ -322,18 +325,15 @@ static int get_frame( mlt_producer producer, mlt_frame_ptr pframe, int index )
 	NDIlib_video_frame_t* video = NULL;
 	double fps = mlt_producer_get_fps( producer );
 	mlt_position position = mlt_producer_position( producer );
-	mlt_properties properties = MLT_CONSUMER_PROPERTIES( producer );
 	producer_ndi_t* self = ( producer_ndi_t* )producer->child;
 
 	pthread_mutex_lock( &self->lock );
 
+	mlt_log_debug( NULL, "%s:%d: entering %s\n", __FILE__, __LINE__, __FUNCTION__ );
+
 	// run thread
 	if ( !self->f_running )
 	{
-		if ( !self->sliced_swab && mlt_properties_get( properties, "sliced_swab" )
-			&& mlt_properties_get_int( properties, "sliced_swab" ) )
-			self->sliced_swab = mlt_slices_init(0, SCHED_FIFO, sched_get_priority_max( SCHED_FIFO ) );
-
 		// set flags
 		self->f_exit = 0;
 
@@ -345,8 +345,9 @@ static int get_frame( mlt_producer producer, mlt_frame_ptr pframe, int index )
 
 	while ( !self->f_exit ) //&& !mlt_deque_count( self->queue ) )
 	{
-////fprintf(stderr, "%s:%d: audio=%p, video=%p, audio_cnt=%d, video_cnt=%d\n",
-////__FUNCTION__, __LINE__, audio, video,  mlt_deque_count( self->a_queue ), mlt_deque_count( self->v_queue ));
+		mlt_log_debug( NULL, "%s:%d: audio=%p, video=%p, audio_cnt=%d, video_cnt=%d\n",
+			__FILE__, __LINE__, audio, video,
+			mlt_deque_count( self->a_queue ), mlt_deque_count( self->v_queue ));
 
 		if ( !video )
 			video = (NDIlib_video_frame_t*)mlt_deque_pop_front( self->v_queue );
@@ -354,22 +355,20 @@ static int get_frame( mlt_producer producer, mlt_frame_ptr pframe, int index )
 		if ( !video )
 		{
 			int r;
-			uint64_t usec;
-			struct timeval now;
 			struct timespec tm;
 
-			// Wait up to half frame duration
-			gettimeofday( &now, NULL );
-			usec = now.tv_sec * 1000000 + now.tv_usec;
-			usec += 500000LL / fps;
-			tm.tv_sec = usec / 1000000LL;
-			tm.tv_nsec = (usec % 1000000LL) * 1000LL;
-
-////fprintf(stderr, "%s:%d: pthread_cond_timedwait...\n", __FUNCTION__, __LINE__ );
+			// Wait
+			clock_gettime(CLOCK_REALTIME, &tm);
+			tm.tv_nsec += 2LL * 1000000000LL / fps;
+			tm.tv_sec += tm.tv_nsec / 1000000000LL;
+			tm.tv_nsec %= 1000000000LL;
 			r = pthread_cond_timedwait( &self->cond, &self->lock, &tm );
-////fprintf(stderr, "%s:%d: pthread_cond_timedwait=%d\n", __FUNCTION__, __LINE__, r );
+			if( !r )
+				continue;
 
-			continue;
+			mlt_log_warning( NULL, "%s:%d: pthread_cond_timedwait()=%d\n", __FILE__, __LINE__, r );
+
+			break;
 		}
 
 		if ( !audio )
@@ -392,6 +391,7 @@ static int get_frame( mlt_producer producer, mlt_frame_ptr pframe, int index )
 			{
 				NDIlib_recv_free_audio( self->recv, audio );
 				mlt_pool_release( audio );
+				mlt_log_warning( NULL, "%s:%d: dropped audio frame\n", __FILE__, __LINE__ );
 				audio = NULL;
 				continue;
 			}
@@ -427,6 +427,8 @@ static int get_frame( mlt_producer producer, mlt_frame_ptr pframe, int index )
 			mlt_properties_set_data( p, "ndi_video", (void *)video, 0, mlt_pool_release, NULL );
 			mlt_frame_push_get_image( frame, get_image );
 		}
+		else
+			mlt_log_error( NULL, "%s:%d: NO VIDEO\n", __FILE__, __LINE__ );
 
 		if ( audio )
 		{
@@ -501,15 +503,16 @@ static void producer_ndi_close( mlt_producer producer )
  */
 mlt_producer producer_ndi_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg )
 {
-	// Allocate the consumer
+	// Allocate the producer
 	producer_ndi_t* self = ( producer_ndi_t* )calloc( 1, sizeof( producer_ndi_t ) );
+	mlt_producer parent = ( mlt_producer )calloc( 1, sizeof( *parent ) );
 
 	mlt_log_debug( NULL, "%s: entering id=[%s], arg=[%s]\n", __FUNCTION__, id, arg );
 
 	// If allocated
-	if ( self && !mlt_producer_init( &self->parent, self ) )
+	if ( self && !mlt_producer_init( parent, self ) )
 	{
-		mlt_producer parent = &self->parent;
+		self->parent = parent;
 		mlt_properties properties = MLT_CONSUMER_PROPERTIES( parent );
 
 		// Setup context

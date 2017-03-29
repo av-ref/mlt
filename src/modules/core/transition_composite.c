@@ -488,7 +488,7 @@ static int sliced_composite_proc( int id, int idx, int jobs, void* cookie )
 /** Composite function.
 */
 
-static int composite_yuv( uint8_t *p_dest, int width_dest, int height_dest, uint8_t *p_src, int width_src, int height_src, uint8_t *alpha_b, uint8_t *alpha_a, struct geometry_s geometry, int field, uint16_t *p_luma, double softness, composite_line_fn line_fn, mlt_slices sliced )
+static int composite_yuv( uint8_t *p_dest, int width_dest, int height_dest, uint8_t *p_src, int width_src, int height_src, uint8_t *alpha_b, uint8_t *alpha_a, struct geometry_s geometry, int field, uint16_t *p_luma, double softness, composite_line_fn line_fn, int sliced )
 {
 	int ret = 0;
 	int i;
@@ -647,7 +647,7 @@ static int composite_yuv( uint8_t *p_dest, int width_dest, int height_dest, uint
 			.line_fn = line_fn,
 		};
 
-		mlt_slices_run(sliced, 0, sliced_composite_proc, &s);
+		mlt_slices_run_normal(0, sliced_composite_proc, &s);
 	}
 
 	return ret;
@@ -1319,7 +1319,9 @@ static int transition_get_image( mlt_frame a_frame, uint8_t **image, mlt_image_f
 			int progressive = 
 					mlt_properties_get_int( a_props, "consumer_deinterlace" ) ||
 					mlt_properties_get_int( properties, "progressive" );
+			int top_field_first = mlt_properties_get_int( a_props, "top_field_first" );
 			int field;
+			int sliced = mlt_properties_get_int( properties, "sliced_composite" );
 			
 			double luma_softness = mlt_properties_get_double( properties, "softness" );
 			mlt_service_lock( MLT_TRANSITION_SERVICE( self ) );
@@ -1351,22 +1353,9 @@ static int transition_get_image( mlt_frame a_frame, uint8_t **image, mlt_image_f
 
 			for ( field = 0; field < ( progressive ? 1 : 2 ); field++ )
 			{
-				mlt_slices sliced = NULL;
-
-				// init or set slices obj
-				if ( mlt_properties_get( properties, "sliced_composite" ) )
-				{
-					sliced = mlt_properties_get_data( properties, "sliced_composite_obj", NULL );
-					if ( !sliced )
-					{
-						sliced = mlt_slices_init( 0, SCHED_OTHER, sched_get_priority_max( SCHED_OTHER ) );
-						mlt_properties_set_data( properties, "sliced_composite_obj", sliced,
-							0, (mlt_destructor)mlt_slices_close, NULL );
-					}
-				}
-
 				// Assume lower field (0) first
 				double field_position = position + field * delta * length;
+				int field_id = progressive ? -1 : ( top_field_first ? ( 1 - field ) : field );
 
 				// Do the calculation if we need to
 				// NB: Locks needed here since the properties are being modified
@@ -1411,10 +1400,12 @@ static int transition_get_image( mlt_frame a_frame, uint8_t **image, mlt_image_f
 				}
 
 				// Composite the b_frame on the a_frame
+				mlt_log_timings_begin();
 				if ( invert )
-					composite_yuv( *image, width_b, height_b, image_b, *width, *height, alpha_a, alpha_b, result, progressive ? -1 : field, luma_bitmap, luma_softness, line_fn, sliced );
+					composite_yuv( *image, width_b, height_b, image_b, *width, *height, alpha_a, alpha_b, result, field_id, luma_bitmap, luma_softness, line_fn, sliced );
 				else
-					composite_yuv( *image, *width, *height, image_b, width_b, height_b, alpha_b, alpha_a, result, progressive ? -1 : field, luma_bitmap, luma_softness, line_fn, sliced );
+					composite_yuv( *image, *width, *height, image_b, width_b, height_b, alpha_b, alpha_a, result, field_id, luma_bitmap, luma_softness, line_fn, sliced );
+				mlt_log_timings_end( NULL, "composite_yuv" );
 			}
 		}
 	}

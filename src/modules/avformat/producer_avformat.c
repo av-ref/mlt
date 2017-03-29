@@ -1,6 +1,6 @@
 /*
  * producer_avformat.c -- avformat producer
- * Copyright (C) 2003-2016 Meltytech, LLC
+ * Copyright (C) 2003-2017 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
 #include <framework/mlt_deque.h>
 #include <framework/mlt_factory.h>
 #include <framework/mlt_cache.h>
+#include <framework/mlt_slices.h>
 
 // ffmpeg Header files
 #include <libavformat/avformat.h>
@@ -1246,6 +1247,110 @@ static int pick_av_pixel_format( int *pix_fmt )
 	return 0;
 }
 
+#if LIBSWSCALE_VERSION_INT >= AV_VERSION_INT( 3, 1, 101 )
+struct sliced_pix_fmt_conv_t
+{
+	int width, height, slice_w;
+	AVFrame *frame;
+	AVPicture *output;
+	enum AVPixelFormat src_format, dst_format;
+	const AVPixFmtDescriptor *src_desc, *dst_desc;
+	int flags, src_colorspace, dst_colorspace, src_full_range, dst_full_range;
+};
+
+static int sliced_h_pix_fmt_conv_proc( int id, int idx, int jobs, void* cookie )
+{
+	uint8_t *out[4];
+	const uint8_t *in[4];
+	int in_stride[4], out_stride[4];
+	int src_v_chr_pos = -513, dst_v_chr_pos = -513, ret, i, slice_x, slice_w, w, h, mul, field, slices, interlaced = 0;
+
+	struct SwsContext *sws;
+	struct sliced_pix_fmt_conv_t* ctx = ( struct sliced_pix_fmt_conv_t* )cookie;
+
+	interlaced = ctx->frame->interlaced_frame;
+	field = ( interlaced ) ? ( idx & 1 ) : 0;
+	idx = ( interlaced ) ? ( idx / 2 ) : idx;
+	slices = ( interlaced ) ? ( jobs / 2 ) : jobs;
+	mul = ( interlaced ) ? 2 : 1;
+	h = ctx->height >> !!interlaced;
+	slice_w = ctx->slice_w;
+	slice_x = slice_w * idx;
+	slice_w = FFMIN( slice_w, ctx->width - slice_x );
+
+	if ( AV_PIX_FMT_YUV420P == ctx->src_format )
+		src_v_chr_pos = ( !interlaced ) ? 128 : ( !field ) ? 64 : 192;
+
+	if ( AV_PIX_FMT_YUV420P == ctx->dst_format )
+		dst_v_chr_pos = ( !interlaced ) ? 128 : ( !field ) ? 64 : 192;
+
+	mlt_log_debug( NULL, "%s:%d: [id=%d, idx=%d, jobs=%d], interlaced=%d, field=%d, slices=%d, mul=%d, h=%d, slice_w=%d, slice_x=%d ctx->src_desc=[log2_chroma_h=%d, log2_chroma_w=%d], src_v_chr_pos=%d, dst_v_chr_pos=%d\n",
+		__FUNCTION__, __LINE__, id, idx, jobs, interlaced, field, slices, mul, h, slice_w, slice_x, ctx->src_desc->log2_chroma_h, ctx->src_desc->log2_chroma_w, src_v_chr_pos, dst_v_chr_pos );
+
+	if ( slice_w <= 0 )
+		return 0;
+
+	sws = sws_alloc_context();
+
+	av_opt_set_int( sws, "srcw", slice_w, 0 );
+	av_opt_set_int( sws, "srch", h, 0 );
+	av_opt_set_int( sws, "src_format", ctx->src_format, 0 );
+	av_opt_set_int( sws, "dstw", slice_w, 0 );
+	av_opt_set_int( sws, "dsth", h, 0 );
+	av_opt_set_int( sws, "dst_format", ctx->dst_format, 0 );
+	av_opt_set_int( sws, "sws_flags", ctx->flags | SWS_FULL_CHR_H_INP, 0 );
+
+	av_opt_set_int( sws, "src_h_chr_pos", -513, 0 );
+	av_opt_set_int( sws, "src_v_chr_pos", src_v_chr_pos, 0 );
+	av_opt_set_int( sws, "dst_h_chr_pos", -513, 0 );
+	av_opt_set_int( sws, "dst_v_chr_pos", dst_v_chr_pos, 0 );
+
+	if ( ( ret = sws_init_context( sws, NULL, NULL ) ) < 0 )
+	{
+		mlt_log_error( NULL, "%s:%d: sws_init_context failed, ret=%d\n", __FUNCTION__, __LINE__, ret );
+		sws_freeContext( sws );
+		return 0;
+	}
+
+	set_luma_transfer( sws, ctx->src_colorspace, ctx->dst_colorspace, ctx->src_full_range, ctx->dst_full_range );
+
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(55, 0, 100)
+#define PIX_DESC_BPP(DESC) (DESC.step_minus1 + 1)
+#else
+#define PIX_DESC_BPP(DESC) (DESC.step)
+#endif
+
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 32, 100)
+#define AV_PIX_FMT_FLAG_PLANAR PIX_FMT_PLANAR
+#endif
+	for( i = 0; i < 4; i++ )
+	{
+		int in_offset = (AV_PIX_FMT_FLAG_PLANAR & ctx->src_desc->flags)
+			? ( ( 1 == i || 2 == i ) ? ( slice_x >> ctx->src_desc->log2_chroma_w ) : slice_x )
+			: ( ( 0 == i ) ? slice_x : 0 );
+
+		int out_offset = (AV_PIX_FMT_FLAG_PLANAR & ctx->dst_desc->flags)
+			? ( ( 1 == i || 2 == i ) ? ( slice_x >> ctx->dst_desc->log2_chroma_w ) : slice_x )
+			: ( ( 0 == i ) ? slice_x : 0 );
+
+		in_offset *= PIX_DESC_BPP(ctx->src_desc->comp[i]);
+		out_offset *= PIX_DESC_BPP(ctx->dst_desc->comp[i]);
+
+		in_stride[i]  = ctx->frame->linesize[i] * mul;
+		out_stride[i] = ctx->output->linesize[i] * mul;
+
+		in[i] =  ctx->frame->data[i] + ctx->frame->linesize[i] * field + in_offset;
+		out[i] = ctx->output->data[i] + ctx->output->linesize[i] * field + out_offset;
+	}
+
+	sws_scale( sws, in, in_stride, 0, h, out, out_stride );
+
+	sws_freeContext( sws );
+
+	return 0;
+}
+#endif
+
 // returns resulting YUV colorspace
 static int convert_image( producer_avformat self, AVFrame *frame, uint8_t *buffer, int pix_fmt,
 	mlt_image_format *format, int width, int height, uint8_t **alpha )
@@ -1253,6 +1358,8 @@ static int convert_image( producer_avformat self, AVFrame *frame, uint8_t *buffe
 	int flags = SWS_BICUBIC | SWS_ACCURATE_RND;
 	mlt_profile profile = mlt_service_profile( MLT_PRODUCER_SERVICE( self->parent ) );
 	int result = self->yuv_colorspace;
+
+	mlt_log_timings_begin();
 
 	mlt_log_debug( MLT_PRODUCER_SERVICE(self->parent), "%s @ %dx%d space %d->%d\n",
 		mlt_image_format_name( *format ),
@@ -1331,6 +1438,52 @@ static int convert_image( producer_avformat self, AVFrame *frame, uint8_t *buffe
 		sws_freeContext( context );
 	}
 	else
+#if LIBSWSCALE_VERSION_INT >= AV_VERSION_INT( 3, 1, 101 )
+	{
+		int i, c;
+		AVPicture output;
+		struct sliced_pix_fmt_conv_t ctx =
+		{
+			.flags = flags,
+			.width = width,
+			.height = height,
+			.frame = frame,
+			.output = &output,
+			.dst_format = AV_PIX_FMT_YUYV422,
+			.src_colorspace = self->yuv_colorspace,
+			.dst_colorspace = profile->colorspace,
+			.src_full_range = self->full_luma,
+			.dst_full_range = 0,
+		};
+#if defined(FFUDIV) && (LIBAVFORMAT_VERSION_INT >= ((55<<16)+(48<<8)+100))
+		ctx.src_format = src_pix_fmt;
+#else
+		ctx.src_format = pix_fmt;
+#endif
+		ctx.src_desc = av_pix_fmt_desc_get( ctx.src_format );
+		ctx.dst_desc = av_pix_fmt_desc_get( ctx.dst_format );
+
+		avpicture_fill( ctx.output, buffer, ctx.dst_format, width, height );
+
+		if ( !getenv("MLT_AVFORMAT_SLICED_PIXFMT_DISABLE") )
+			ctx.slice_w = ( width < 1000 )
+				? ( 256 >> frame->interlaced_frame )
+				: ( 512 >> frame->interlaced_frame );
+		else
+			ctx.slice_w = width;
+
+		c = ( width + ctx.slice_w - 1 ) / ctx.slice_w;
+		c *= frame->interlaced_frame ? 2 : 1;
+
+		if ( !getenv("MLT_AVFORMAT_SLICED_PIXFMT_DISABLE") )
+			mlt_slices_run_normal( c, sliced_h_pix_fmt_conv_proc, &ctx );
+		else
+			for ( i = 0 ; i < c; i++ )
+				sliced_h_pix_fmt_conv_proc( i, i, c, &ctx );
+
+		result = profile->colorspace;
+	}
+#else
 	{
 #if defined(FFUDIV) && (LIBAVFORMAT_VERSION_INT >= ((55<<16)+(48<<8)+100))
 		struct SwsContext *context = sws_getContext( width, height, src_pix_fmt,
@@ -1347,6 +1500,9 @@ static int convert_image( producer_avformat self, AVFrame *frame, uint8_t *buffe
 			output.data, output.linesize);
 		sws_freeContext( context );
 	}
+#endif
+	mlt_log_timings_end( NULL, __FUNCTION__ );
+
 	return result;
 }
 
@@ -1426,6 +1582,8 @@ static int producer_get_image( mlt_frame frame, uint8_t **buffer, mlt_image_form
 
 	// Get codec context
 	AVCodecContext *codec_context = stream->codec;
+
+	mlt_log_timings_begin();
 
 	// Get the image cache
 	if ( ! self->image_cache )
@@ -1627,8 +1785,12 @@ static int producer_get_image( mlt_frame frame, uint8_t **buffer, mlt_image_form
 				// Make a dumb assumption on streams that contain wild timestamps
 				if ( llabs( req_position - int_position ) > 999 )
 				{
+					mlt_log_verbose( MLT_PRODUCER_SERVICE(producer), " WILD TIMESTAMP: "
+						"pkt.pts=[%"PRId64"], pkt.dts=[%"PRId64"], req_position=[%"PRId64"], "
+						"current_position=[%"PRId64"], int_position=[%"PRId64"], pts=[%"PRId64"] \n",
+						self->pkt.pts, self->pkt.dts, req_position,
+						self->current_position, int_position, pts );
 					int_position = req_position;
-					mlt_log_verbose( MLT_PRODUCER_SERVICE(producer), " WILD TIMESTAMP!\n" );
 				}
 				self->last_position = int_position;
 
@@ -1837,6 +1999,8 @@ exit_get_image:
 	mlt_properties_set_int( properties, "meta.media.top_field_first", self->top_field_first );
 	mlt_properties_set_int( properties, "meta.media.progressive", mlt_properties_get_int( frame_properties, "progressive" ) );
 	mlt_service_unlock( MLT_PRODUCER_SERVICE( producer ) );
+
+	mlt_log_timings_end( NULL, __FUNCTION__ );
 
 	return !got_picture;
 }
@@ -2203,7 +2367,6 @@ static int sample_bytes( AVCodecContext *context )
 	return av_get_bytes_per_sample( context->sample_fmt );
 }
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 static void planar_to_interleaved( uint8_t *dest, AVFrame *src, int samples, int channels, int bytes_per_sample )
 {
 	int s, c;
@@ -2217,20 +2380,6 @@ static void planar_to_interleaved( uint8_t *dest, AVFrame *src, int samples, int
 		}
 	}
 }
-#else
-static void planar_to_interleaved( uint8_t *dest, uint8_t *src, int samples, int channels, int bytes_per_sample )
-{
-	int s, c;
-	for ( s = 0; s < samples; s++ )
-	{
-		for ( c = 0; c < channels; c++ )
-		{
-			memcpy( dest, src + ( c * samples + s ) * bytes_per_sample, bytes_per_sample );
-			dest += bytes_per_sample;
-		}
-	}
-}
-#endif
 
 static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int samples, double timecode, double fps )
 {
@@ -2245,7 +2394,6 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 
 	// Obtain the audio buffers
 	uint8_t *audio_buffer = self->audio_buffer[ index ];
-	uint8_t *decode_buffer = self->decode_buffer[ index ];
 
 	int channels = codec_context->channels;
 	int audio_used = self->audio_used[ index ];
@@ -2254,10 +2402,9 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 	while ( pkt.data && pkt.size > 0 )
 	{
 		int sizeof_sample = sample_bytes( codec_context );
-		int data_size = self->audio_buffer_size[ index ];
+		int got_frame = 0;
 
 		// Decode the audio
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		if ( !self->audio_frame )
 #if LIBAVCODEC_VERSION_INT >= ((55<<16)+(45<<8)+0)
 			self->audio_frame = av_frame_alloc();
@@ -2268,16 +2415,7 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 		else
 			avcodec_get_frame_defaults( self->audio_frame );
 #endif
-		ret = avcodec_decode_audio4( codec_context, self->audio_frame, &data_size, &pkt );
-		if ( data_size ) {
-			data_size = av_samples_get_buffer_size( NULL, channels,
-				self->audio_frame->nb_samples, codec_context->sample_fmt, 1 );
-			decode_buffer = self->audio_frame->data[0];
-			channels = codec_context->channels;
-		}
-#else
-		ret = avcodec_decode_audio3( codec_context, (int16_t*) decode_buffer, &data_size, &pkt );
-#endif
+		ret = avcodec_decode_audio4( codec_context, self->audio_frame, &got_frame, &pkt );
 		if ( ret < 0 )
 		{
 			mlt_log_warning( MLT_PRODUCER_SERVICE(self->parent), "audio decoding error %d\n", ret );
@@ -2289,10 +2427,11 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 		pkt.data += ret;
 
 		// If decoded successfully
-		if ( data_size > 0 )
+		if ( got_frame )
 		{
 			// Figure out how many samples will be needed after resampling
-			int convert_samples = data_size / channels / sizeof_sample;
+			int convert_samples = self->audio_frame->nb_samples;
+			channels = codec_context->channels;
 
 			// Resize audio buffer to prevent overflow
 			if ( ( audio_used + convert_samples ) * channels * sizeof_sample > self->audio_buffer_size[ index ] )
@@ -2307,15 +2446,14 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 			case AV_SAMPLE_FMT_S16P:
 			case AV_SAMPLE_FMT_S32P:
 			case AV_SAMPLE_FMT_FLTP:
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 				planar_to_interleaved( dest, self->audio_frame, convert_samples, channels, sizeof_sample );
-#else
-				planar_to_interleaved( dest, decode_buffer, convert_samples, channels, sizeof_sample );
-#endif
 				break;
-			default:
+			default: {
+				int data_size = av_samples_get_buffer_size( NULL, channels,
+					self->audio_frame->nb_samples, codec_context->sample_fmt, 1 );
 				// Straight copy to audio buffer
-				memcpy( dest, decode_buffer, data_size );
+				memcpy( dest, self->audio_frame->data[0], data_size );
+				}
 			}
 			audio_used += convert_samples;
 		}
@@ -2333,7 +2471,7 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 
 	// If we're behind, ignore this packet
 	// Skip this on non-seekable, audio-only inputs.
-	if ( pkt.pts >= 0 && ( self->seekable || self->video_format ) && *ignore == 0 && audio_used > samples / 2 )
+	if ( pkt.pts >= 0 && ( self->seekable || self->video_format ) && *ignore == 0 && audio_used > samples )
 	{
 		int64_t pts = pkt.pts;
 		if ( self->first_pts != AV_NOPTS_VALUE )
@@ -2349,12 +2487,15 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 			"A pkt.pts %"PRId64" pkt.dts %"PRId64" req_pos %"PRId64" cur_pos %"PRId64" pkt_pos %"PRId64"\n",
 			pkt.pts, pkt.dts, req_position, self->current_position, int_position );
 
-		if ( req_pts > pts )
-			// We are behind, so skip some
-			*ignore = lrint( timebase * (req_pts - pts) * codec_context->sample_rate );
-		else if ( self->audio_index != INT_MAX && int_position > req_position + 2 )
-			// We are ahead, so seek backwards some more
-			seek_audio( self, req_position, timecode - 1.0 );
+		if ( self->seekable || int_position > 0 )
+		{
+			if ( req_pts > pts )
+				// We are behind, so skip some
+				*ignore = lrint( timebase * (req_pts - pts) * codec_context->sample_rate );
+			else if ( self->audio_index != INT_MAX && int_position > req_position + 2 )
+				// We are ahead, so seek backwards some more
+				seek_audio( self, req_position, timecode - 1.0 );
+		}
 
 		// Cancel the find_first_pts() in seek_audio()
 		if ( self->video_index == -1 && self->last_position == POSITION_INITIAL )

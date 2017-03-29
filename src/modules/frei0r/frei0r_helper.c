@@ -20,7 +20,6 @@
 #include <frei0r.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sched.h>
 
 static void parse_color( int color, f0r_param_color_t *fcolor )
 {
@@ -102,25 +101,17 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 	mlt_service_type type = mlt_service_identify( service );
 	int not_thread_safe = mlt_properties_get_int( prop, "_not_thread_safe" );
 	int slice_count = mlt_properties_get(prop, "threads") ? mlt_properties_get_int(prop, "threads") : -1;
-	mlt_slices slices = NULL;
 
-	mlt_service_lock( service );
-
-	if (slice_count >= 0) {
-		slices = mlt_properties_get_data(prop, "mlt_slices", NULL);
-		if (!slices)
-			slices = mlt_slices_init(slice_count, SCHED_OTHER, sched_get_priority_max(SCHED_OTHER));
-		if (slices) {
-			mlt_properties_set_data(prop, "mlt_slices", slices, 0, (mlt_destructor) mlt_slices_close, NULL);
-			slice_count = mlt_slices_count(slices);
-			not_thread_safe = 1;
-		}
-	}
+	if (slice_count >= 0)
+		slice_count = mlt_slices_count_normal();
 
 	//use as name the width and height
 	int slice_height = *height / (slice_count > 0? slice_count : 1);
 	char ctorname[1024] = "";
 	sprintf(ctorname, "ctor-%dx%d", *width, slice_height);
+
+	mlt_service_lock( service );
+
 	f0r_instance_t inst = mlt_properties_get_data(prop, ctorname, NULL);
 	if (!inst) {
 		inst = f0r_construct(*width, slice_height);
@@ -207,7 +198,7 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 		}
 	}
 	if (type==producer_type) {
-		if (slices) {
+		if (slice_count > 0) {
 			struct update_context ctx = {
 				.frei0r = inst,
 				.width = *width,
@@ -217,12 +208,12 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 				.output = dest,
 				.f0r_update = f0r_update
 			};
-			mlt_slices_run(slices, 0, f0r_update_slice, &ctx);
+			mlt_slices_run_normal(slice_count, f0r_update_slice, &ctx);
 		} else {
 			f0r_update ( inst, time, source[0], dest );
 		}
 	} else if (type==filter_type) {
-		if (slices) {
+		if (slice_count > 0) {
 			struct update_context ctx = {
 				.frei0r = inst,
 				.width = *width,
@@ -232,12 +223,12 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 				.output = dest,
 				.f0r_update = f0r_update
 			};
-			mlt_slices_run(slices, 0, f0r_update_slice, &ctx);
+			mlt_slices_run_normal(slice_count, f0r_update_slice, &ctx);
 		} else {
 			f0r_update ( inst, time, source[0], dest );
 		}
 	} else if (type==transition_type && f0r_update2 ) {
-		if (slices) {
+		if (slice_count > 0) {
 			struct update_context ctx = {
 				.frei0r = inst,
 				.width = *width,
@@ -247,7 +238,7 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 				.output = dest,
 				.f0r_update2 = f0r_update2
 			};
-			mlt_slices_run(slices, 0, f0r_update2_slice, &ctx);
+			mlt_slices_run_normal(slice_count, f0r_update2_slice, &ctx);
 		} else {
 			f0r_update2 ( inst, time, source[0], source[1], NULL, dest );
 		}
