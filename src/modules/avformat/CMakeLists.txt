@@ -1,3 +1,4 @@
+﻿
 
 find_package(FFmpeg REQUIRED)
 
@@ -33,5 +34,11 @@ add_custom_command(
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt/avformat
         COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/blacklist.txt ${MLT_META_DATA_DIRECTORY}/avformat/
-        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/*.yml  ${MLT_META_DATA_DIRECTORY}/avformat/
+#        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/*.yml  ${MLT_META_DATA_DIRECTORY}/avformat/
 )
+
+file(GLOB ymls *.yml)
+foreach(yml ${ymls})
+    file(COPY ${yml}
+        DESTINATION ${MLT_META_DATA_DIRECTORY}/avformat/)
+endforeach()

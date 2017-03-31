@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 3.0.0)
+﻿cmake_minimum_required(VERSION 3.0.0)
 
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_PREFIX_PATH}  ${CMAKE_CURRENT_SOURCE_DIR}/cmake  )
+set(CMAKE_MODULE_PATH
+    ${CMAKE_PREFIX_PATH}
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake  )
 
 message( "path in cmake_prefix_path" )
 foreach( path ${CMAKE_PREFIX_PATH} )
@@ -13,6 +15,23 @@ foreach( path ${CMAKE_PREFIX_PATH} )
 endforeach( path )
 
 project(mlt)
+
+if(WIN32)
+    set(CMAKE_INSTALL_PREFIX "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install")
+    set(ThirdPartyPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install")
+    link_directories( ${ThirdPartyPath}/lib )
+    INCLUDE_DIRECTORIES(${ThirdPartyPath}/include)
+
+    set( WinFFmpegPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/ffmpeg-3.2.4-win32-dev/")
+    set(WinFFmpegCOMPONENTS avcodec avdevice avfilter avformat avutil swscale)
+    foreach(comp ${WinFFmpegCOMPONENTS})
+        set( _${comp}_INCLUDE_DIRS ${WinFFmpegPath}include  )
+        set( _${comp}_LIBRARY_DIRS ${WinFFmpegPath}lib  )
+    endforeach(comp)
+#    link_directories( ${FFMPEG_WIN_PATH}/lib )
+
+    #set( PTHREAD_PATH "f:///github.cpp-repo/pthread-release-x64-msvc2015")
+endif()
 
 # Put the libaries and binaries that get built into directories at the
 # top of the build tree rather than in hard-to-find leaf

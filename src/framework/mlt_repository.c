@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_repository.c
  * \brief provides a map between service and shared objects
  * \see mlt_repository_s
@@ -118,6 +118,7 @@ mlt_repository mlt_repository_init( const char *directory )
 				// Register the object file for closure
 				mlt_properties_set_data( &self->parent, object_name, object, 0, ( mlt_destructor )dlclose, NULL );
 				++plugin_count;
+                mlt_log_info( NULL, "%s: mlt object_name =  %s\n", __FUNCTION__, object_name );
 			}
 			else
 			{

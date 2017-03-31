@@ -1,4 +1,4 @@
-
+﻿
 
 
 #ifeq ($(targetos), Darwin)
@@ -93,7 +93,9 @@ endif(WIN32)
 add_library(mlt SHARED ${SRCS} )
 
 if(WIN32)
-    target_link_libraries( mlt pthread )
+#    target_include_directories(mlt PRIVATE ${PTHREAD_PATH}/include)
+#    target_link_libraries( mlt pthread_dll.lib)
+    target_link_libraries( mlt pthread dl)
 else()
     target_link_libraries( mlt pthread m dl)
 endif(WIN32)

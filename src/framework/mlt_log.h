@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_log.h
  * \brief logging functions
  *

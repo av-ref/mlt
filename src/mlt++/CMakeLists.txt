@@ -1,4 +1,4 @@
-
+﻿
 set(SRCS
         MltAnimation.cpp
         MltConsumer.cpp
@@ -52,6 +52,8 @@ set(HDRS
         MltTractor.h
         MltTransition.h
         )
+
+add_definitions(-DMLTPP_EXPORTS)
 
 add_library( mlt++ SHARED ${SRCS})
 target_link_libraries(mlt++ mlt)

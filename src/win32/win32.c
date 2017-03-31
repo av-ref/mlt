@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file win32.c
  * \brief Miscellaneous utility functions for Windows.
  *

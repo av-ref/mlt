@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2013-2015 Dan Dennedy <dan@dennedy.org>
  *
  * This library is free software; you can redistribute it and/or
@@ -37,14 +37,14 @@ class TestProperties: public QObject
 public:
     TestProperties() {
 #if defined(__linux__) || defined(__APPLE__)
-        locale = newlocale( LC_NUMERIC_MASK, "POSIX", NULL );
+//        locale = newlocale( LC_NUMERIC_MASK, "POSIX", NULL );
 #endif
         Factory::init();
     }
 
     ~TestProperties() {
 #if defined(__linux__) || defined(__APPLE__)
-        freelocale(locale);
+//        freelocale(locale);
 #endif
     }
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_factory.c
  * \brief the factory method interfaces
  *
@@ -33,17 +33,17 @@
 #define PRESETS_DIR "/presets"
 
 #ifdef _WIN32
-	#ifdef PREFIX_LIB
-		#undef PREFIX_LIB
-	#endif
-	#ifdef PREFIX_DATA
-		#undef PREFIX_DATA
-	#endif
-	#include <windows.h>
-	/** the default subdirectory of the libdir for holding modules (plugins) */
-	#define PREFIX_LIB "\\lib\\mlt"
-	/** the default subdirectory of the install prefix for holding module (plugin) data */
-	#define PREFIX_DATA "\\share\\mlt"
+//	#ifdef PREFIX_LIB
+//		#undef PREFIX_LIB
+//	#endif
+//	#ifdef PREFIX_DATA
+//		#undef PREFIX_DATA
+//	#endif
+    #include <windows.h>
+//	/** the default subdirectory of the libdir for holding modules (plugins) */
+//    #define PREFIX_LIB "./lib/mlt"
+//	/** the default subdirectory of the install prefix for holding module (plugin) data */
+//    #define PREFIX_DATA "./share/mlt"
 #elif defined(__APPLE__) && defined(RELOCATABLE)
 	#include <mach-o/dyld.h>
 	/** the default subdirectory of the libdir for holding modules (plugins) */
@@ -100,7 +100,7 @@ static void mlt_factory_create_done( mlt_listener listener, mlt_properties owner
  * \return the repository
  */
 
-mlt_repository mlt_factory_init( const char *directory )
+mlt_repository mlt_factory_init( const char *directory, const char * datadir )
 {
 	// Load the system locales
 	setlocale( LC_ALL, "" );
@@ -116,7 +116,8 @@ mlt_repository mlt_factory_init( const char *directory )
 		mlt_properties_set_or_default( global_properties, "MLT_CONSUMER", getenv( "MLT_CONSUMER" ), "sdl" );
 		mlt_properties_set( global_properties, "MLT_TEST_CARD", getenv( "MLT_TEST_CARD" ) );
 		mlt_properties_set_or_default( global_properties, "MLT_PROFILE", getenv( "MLT_PROFILE" ), "dv_pal" );
-		mlt_properties_set_or_default( global_properties, "MLT_DATA", getenv( "MLT_DATA" ), PREFIX_DATA );
+//		mlt_properties_set_or_default( global_properties, "MLT_DATA", getenv( "MLT_DATA" ), PREFIX_DATA );
+        mlt_properties_set_or_default( global_properties, "MLT_DATA", datadir, PREFIX_DATA);
 
 #if defined(_WIN32)
 		char path[1024];
@@ -148,23 +149,23 @@ mlt_repository mlt_factory_init( const char *directory )
 			directory = PREFIX_LIB;
 
 		// Store the prefix for later retrieval
-#if defined(_WIN32) || (defined(__APPLE__) && defined(RELOCATABLE))
-		char *exedir = mlt_environment( "MLT_APPDIR" );
-		size_t size = strlen( exedir );
-		if ( global_properties && !getenv( "MLT_DATA" ) )
-		{
-			mlt_directory = calloc( 1, size + strlen( PREFIX_DATA ) + 1 );
-			strcpy( mlt_directory, exedir );
-			strcat( mlt_directory, PREFIX_DATA );
-			mlt_properties_set( global_properties, "MLT_DATA", mlt_directory );
-			free( mlt_directory );
-		}
-		mlt_directory = calloc( 1, size + strlen( directory ) + 1 );
-		strcpy( mlt_directory, exedir );
-		strcat( mlt_directory, directory );
-#else
+//#if defined(_WIN32) || (defined(__APPLE__) && defined(RELOCATABLE))
+//		char *exedir = mlt_environment( "MLT_APPDIR" );
+//		size_t size = strlen( exedir );
+//		if ( global_properties && !getenv( "MLT_DATA" ) )
+//		{
+//			mlt_directory = calloc( 1, size + strlen( PREFIX_DATA ) + 1 );
+//			strcpy( mlt_directory, exedir );
+//			strcat( mlt_directory, PREFIX_DATA );
+//			mlt_properties_set( global_properties, "MLT_DATA", mlt_directory );
+//			free( mlt_directory );
+//		}
+//		mlt_directory = calloc( 1, size + strlen( directory ) + 1 );
+//		strcpy( mlt_directory, exedir );
+//		strcat( mlt_directory, directory );
+//#else
 		mlt_directory = strdup( directory );
-#endif
+//#endif
 		
 		// Initialise the pool
 		mlt_pool_init( );

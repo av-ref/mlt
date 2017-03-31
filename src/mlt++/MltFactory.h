@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MltFactory.h - MLT Wrapper
  * Copyright (C) 2004-2017 Meltytech, LLC
  * Author: Charles Yates <charles.yates@gmail.com>
@@ -42,7 +42,7 @@ namespace Mlt
 	class MLTPP_DECLSPEC Factory
 	{
 		public:
-			static Repository *init( const char *directory = NULL );
+            static Repository *init( const char *directory = NULL, const char * datadir = NULL );
 			static Properties *event_object( );
 			static Producer *producer( Profile& profile, char *id, char *arg = NULL );
 			static Filter *filter( Profile& profile, char *id, char *arg = NULL );

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_factory.h
  * \brief the factory method interfaces
  *
@@ -45,7 +45,7 @@
  * \event \em consumer-create-done fired when a consumer registers itself
  */
 
-extern mlt_repository mlt_factory_init( const char *directory );
+extern mlt_repository mlt_factory_init( const char * sodir, const char * datadir );
 extern mlt_repository mlt_factory_repository();
 extern const char *mlt_factory_directory( );
 extern char *mlt_environment( const char *name );
