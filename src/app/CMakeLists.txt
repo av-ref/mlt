@@ -26,5 +26,12 @@ qt5_wrap_ui(UI_HEADERS mainwindow.ui)
 qt5_add_resources(QRCS resources.qrc)
 
 #find_package(Qt5 COMPONENTS Widgets REQUIRED)
-add_executable(sampleapp ${SRCS} ${QRCS})
-target_link_libraries(sampleapp mlt++ mlt Qt5::Widgets Qt5::Core Qt5::Gui)
+add_executable(mltQApp ${SRCS} ${QRCS})
+target_link_libraries(mltQApp mlt++ mlt Qt5::Widgets Qt5::Core Qt5::Gui)
+
+install(TARGETS mltQApp EXPORT MltTargets #install target: dll lib exe etc
+  LIBRARY DESTINATION lib/mlt
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)

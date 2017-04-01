@@ -6,12 +6,12 @@ add_subdirectory(mlt++)
 
 if(WIN32)
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-    C:/Qt/Qt5.8.0-mingw/5.8/mingw53_32/lib/cmake/Qt5Core
-    C:/Qt/Qt5.8.0-mingw/5.8/mingw53_32/lib/cmake/Qt3Widgets
-    C:/Qt/Qt5.8.0-mingw/5.8/mingw53_32/lib/cmake/Qt5Gui
-    C:/Qt/Qt5.8.0-mingw/5.8/mingw53_32/lib/cmake/Qt5Test
-    C:/Qt/Qt5.8.0-mingw/5.8/mingw53_32/lib/cmake/Qt5Svg
-    C:/Qt/Qt5.8.0-mingw/5.8/mingw53_32/lib/cmake/Qt5Xml
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Core
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt3Widgets
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Gui
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Test
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Svg
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Xml
     )
 else(WIN32)
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
@@ -32,6 +32,6 @@ find_package(Qt5Svg REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
 
-add_subdirectory(modules)
-add_subdirectory(app)
-add_subdirectory(tests)
+#add_subdirectory(modules)
+#add_subdirectory(app)
+#add_subdirectory(tests)

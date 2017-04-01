@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
-#include <libgen.h>
+//#include <libgen.h>
 
 /** the default subdirectory of the datadir for holding presets */
 #define PRESETS_DIR "/presets"
@@ -129,10 +129,10 @@ mlt_repository mlt_factory_init( const char *directory, const char * datadir )
 		_NSGetExecutablePath( path, &size );
 #endif
 #if defined(_WIN32) || (defined(__APPLE__) && defined(RELOCATABLE))
-		char *path2 = strdup( path );
-		char *appdir = dirname( path2 );
-		mlt_properties_set( global_properties, "MLT_APPDIR", appdir );
-		free( path2 );
+//		char *path2 = strdup( path );
+//		char *appdir = dirname( path2 );
+//		mlt_properties_set( global_properties, "MLT_APPDIR", appdir );
+//		free( path2 );
 #endif
 	}
 

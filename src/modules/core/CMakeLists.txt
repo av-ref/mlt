@@ -120,3 +120,19 @@ foreach(yml ${ymls})
     file(COPY ${yml}
         DESTINATION ${MLT_META_DATA_DIRECTORY}/core/)
 endforeach()
+
+install(TARGETS mltcore EXPORT MltTargets #install target: dll lib exe etc
+  LIBRARY DESTINATION lib/mlt
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} 
+DESTINATION share/ 
+FILES_MATCHING 
+PATTERN "data_fx.properties"
+PATTERN "loader.dict"
+PATTERN "loader.ini"
+PATTERN "*.yml"
+)  #install dir

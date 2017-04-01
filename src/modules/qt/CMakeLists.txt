@@ -46,3 +46,16 @@ foreach(yml ${ymls})
     file(COPY ${yml}
         DESTINATION ${MLT_META_DATA_DIRECTORY}/qt/)
 endforeach()
+
+install(TARGETS mltqt EXPORT MltTargets #install target: dll lib exe etc
+  LIBRARY DESTINATION lib/mlt
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+DESTINATION share/
+FILES_MATCHING
+PATTERN "*.yml"
+)  #install dir

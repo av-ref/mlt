@@ -17,12 +17,12 @@ endforeach( path )
 project(mlt)
 
 if(WIN32)
-    set(CMAKE_INSTALL_PREFIX "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install")
-    set(ThirdPartyPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install")
+    set(CMAKE_INSTALL_PREFIX "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
+    set(ThirdPartyPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
     link_directories( ${ThirdPartyPath}/lib )
     INCLUDE_DIRECTORIES(${ThirdPartyPath}/include)
 
-    set( WinFFmpegPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/ffmpeg-3.2.4-win32-dev/")
+    set( WinFFmpegPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
     set(WinFFmpegCOMPONENTS avcodec avdevice avfilter avformat avutil swscale)
     foreach(comp ${WinFFmpegCOMPONENTS})
         set( _${comp}_INCLUDE_DIRS ${WinFFmpegPath}include  )
@@ -37,8 +37,8 @@ endif()
 # top of the build tree rather than in hard-to-find leaf
 # directories. This simplifies manual testing and the use of the build
 # tree rather than installed Boost libraries.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/) #add_library(MODULE)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mlt) #add_library(STATIC)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mlt) #add_library(MODULE)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) #add_library(STATIC)
 # Windows DLLs are "runtime" for CMake. Output them to "bin" like the Visual Studio projects do.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) #add_library(SHARED)
 set(MLT_META_DATA_DIRECTORY ${CMAKE_BINARY_DIR}/share/mlt)
@@ -84,5 +84,6 @@ configure_file(./src/config_mlt.h.in ${CMAKE_BINARY_DIR}/src/config_mlt.h)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_BINARY_DIR}/src)
 
-
 add_subdirectory(src)
+
+

@@ -80,15 +80,15 @@ mlt_repository mlt_repository_init( const char *directory )
 	int plugin_count = 0;
 
 #ifdef _WIN32
-	char *syspath = getenv("PATH");
-	char *exedir = mlt_environment( "MLT_APPDIR" );
-	char *newpath = "PATH=";
-	newpath = calloc( 1, strlen( newpath )+ strlen( exedir ) + 1 + strlen( syspath ) + 1 );
-	strcat( newpath, "PATH=" );
-	strcat( newpath, exedir );
-	strcat( newpath, ";" );
-	strcat( newpath, syspath );
-	putenv(newpath);
+//	char *syspath = getenv("PATH");
+//	char *exedir = mlt_environment( "MLT_APPDIR" );
+//	char *newpath = "PATH=";
+//	newpath = calloc( 1, strlen( newpath )+ strlen( exedir ) + 1 + strlen( syspath ) + 1 );
+//	strcat( newpath, "PATH=" );
+//	strcat( newpath, exedir );
+//	strcat( newpath, ";" );
+//	strcat( newpath, syspath );
+//	putenv(newpath);
 #endif
 
 	// Iterate over files

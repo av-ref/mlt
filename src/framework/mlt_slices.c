@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_slices.c
  * \brief sliced threading processing helper
  * \see mlt_slices_s
@@ -26,7 +26,7 @@
 #include "mlt_factory.h"
 
 #include <stdlib.h>
-#include <unistd.h>
+#include <windows.h>
 #include <pthread.h>
 #include <sched.h>
 #ifdef _WIN32

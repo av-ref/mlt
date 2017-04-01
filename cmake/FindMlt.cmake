@@ -28,11 +28,20 @@ foreach(comp ${MLT_FIND_COMPONENTS})
 	endif()
 	find_path(MLT_${comp}_INCLUDE_DIR
 		NAMES "${comp}/framework/${comp}.h"
+		HINTS
+		    ${_${comp}_INCLUDE_DIRS}
 		PATHS
 			/usr/include /usr/local/include /opt/local/include /sw/include /usr/include/x86_64-linux-gnu/
 		DOC "MLT include directory")
 	find_library(MLT_${comp}_LIBRARY
-		NAMES ${comp}
+		NAMES ${comp} lib${comp} lib${comp}.dll
+		HINTS
+			${_${comp}_LIBRARY_DIRS}
+			"${MLT_${comp}_INCLUDE_DIR}/../lib"
+			"${MLT_${comp}_INCLUDE_DIR}/../lib${_lib_suffix}"
+			"${MLT_${comp}_INCLUDE_DIR}/../libs${_lib_suffix}"
+			"${MLT_${comp}_INCLUDE_DIR}/lib"
+			"${MLT_${comp}_INCLUDE_DIR}/lib${_lib_suffix}"
 		PATHS
 			/usr/lib /usr/local/lib /opt/local/lib /sw/lib /usr/lib/x86_64-linux-gnu/
 		PATH_SUFFIXES ${comp} lib${comp}

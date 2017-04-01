@@ -43,7 +43,6 @@ MltController::~MltController ()
 void MltController::init ()
 {
     QDir dir(QApplication::applicationDirPath());
-//    qDebug()<< dir.currentPath();
     dir.cdUp();
     dir.cd("lib");
     dir.cd("mlt");

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_pool.c
  * \brief memory pooling functionality
  * \see mlt_pool_s
@@ -68,7 +68,9 @@ typedef struct mlt_pool_s
  * optimized libraries (sse/altivec).
  */
 
-typedef struct __attribute__ ((aligned (16))) mlt_release_s
+
+//typedef struct __attribute__ ((aligned (16))) mlt_release_s
+typedef struct __declspec(align(16)) mlt_release_s
 {
 	mlt_pool pool;
 	int references;
@@ -139,7 +141,7 @@ static void *pool_fetch( mlt_pool self )
 			// If out of memory, log it, reclaim memory, and try again.
 			if ( !release && self->size > 0 )
 			{
-				mlt_log_fatal( NULL, "[mlt_pool] out of memory\n" );
+                mlt_log_fatal( NULL, "[mlt_pool] out of memory\n", "");
 				mlt_pool_purge();
 				release = mlt_alloc( self->size );
 			}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_consumer.c
  * \brief abstraction for all consumer services
  * \see mlt_consumer_s
@@ -30,7 +30,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/time.h>
+//#include <sys/time.h>
+//#include <time.h>
+#include "../win32/win_time.h"
 
 /** Define this if you want an automatic deinterlace (if necessary) when the
  * consumer's producer is not running at normal speed.
@@ -622,8 +624,8 @@ int mlt_consumer_put_frame( mlt_consumer self, mlt_frame frame )
 
 	if ( mlt_service_producer( service ) == NULL )
 	{
-		struct timeval now;
-		struct timespec tm;
+        struct timeval now;
+        struct timespec tm;
 		consumer_private *priv = self->local;
 
 		mlt_properties_set_int( MLT_CONSUMER_PROPERTIES(self), "put_pending", 1 );
@@ -914,7 +916,7 @@ static void *consumer_read_ahead_thread( void *arg )
 				// Reset cost tracker
 				time_process = 0;
 				count = 1;
-				mlt_log_verbose( self, "too many frames dropped - forcing next frame\n" );
+                mlt_log_verbose( self, "too many frames dropped - forcing next frame\n",  "");
 			}
 		}
 
@@ -1495,7 +1497,7 @@ static mlt_frame worker_get_frame( mlt_consumer self, mlt_properties properties 
 		{
 			int orig_buffer = mlt_properties_get_int( properties, "buffer" );
 			int prefill = mlt_properties_get_int( properties, "prefill" );
-			mlt_log_verbose( self, "too many frames dropped - " );
+            mlt_log_verbose( self, "too many frames dropped - ", "" );
 
 			// If using a default low-latency buffer level (SDL) and below the limit
 			if ( ( orig_buffer == 1 || prefill == 1 ) && buffer < (threads + 1) * 10 )
@@ -1508,7 +1510,7 @@ static mlt_frame worker_get_frame( mlt_consumer self, mlt_properties properties 
 			else
 			{
 				// Tell the consumer to render it
-				mlt_log_verbose( self, "forcing next frame\n" );
+                mlt_log_verbose( self, "forcing next frame\n", "" );
 				mlt_properties_set_int( MLT_FRAME_PROPERTIES( frame ), "rendered", 1 );
 				priv->consecutive_dropped = 0;
 			}
@@ -1633,7 +1635,7 @@ void mlt_consumer_stopped( mlt_consumer self )
 int mlt_consumer_stop( mlt_consumer self )
 {
 	// Get the properies
-	mlt_properties properties = MLT_CONSUMER_PROPERTIES( self );
+    mlt_properties properties = MLT_CONSUMER_PROPERTIES( self );
 	consumer_private *priv = self->local;
 
 	// Just in case...
