@@ -94,7 +94,7 @@ endif(WIN32)
 
 add_library(mltcore MODULE ${SRCS})
 if(WIN32)
-    target_link_libraries(mltcore mlt pthread)
+    target_link_libraries(mltcore mlt pthread_dll)
     target_include_directories(mltcore PRIVATE ../../win32)
 else()
     target_link_libraries(mltcore mlt m pthread)
@@ -129,7 +129,7 @@ install(TARGETS mltcore EXPORT MltTargets #install target: dll lib exe etc
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} 
-DESTINATION share/ 
+DESTINATION share/mlt
 FILES_MATCHING 
 PATTERN "data_fx.properties"
 PATTERN "loader.dict"

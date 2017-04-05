@@ -21,7 +21,7 @@
 
 #ifndef MLT_LOG_H
 #define MLT_LOG_H
-
+#include "mlt_defines.h"
 #include <stdarg.h>
 #include <stdint.h>
 
@@ -74,24 +74,24 @@
  * \see mlt_vlog
  */
 #ifdef __GNUC__
-void mlt_log( void *service, int level, const char *fmt, ... ) __attribute__ ((__format__ (__printf__, 3, 4)));
+MLT_DECLSPEC void mlt_log( void *service, int level, const char *fmt, ... ) __attribute__ ((__format__ (__printf__, 3, 4)));
 #else
-void mlt_log( void *service, int level, const char *fmt, ... );
+MLT_DECLSPEC void mlt_log( void *service, int level, const char *fmt, ... );
 #endif
 
-#define mlt_log_panic(service, format, args, ...) mlt_log((service), MLT_LOG_PANIC, (format), ## args)
-#define mlt_log_fatal(service, format, args, ...) mlt_log((service), MLT_LOG_FATAL, (format), ## args)
-#define mlt_log_error(service, format, args, ...) mlt_log((service), MLT_LOG_ERROR, (format), ## args)
-#define mlt_log_warning(service, format, args, ...) mlt_log((service), MLT_LOG_WARNING, (format), ## args)
-#define mlt_log_info(service, format, args, ...) mlt_log((service), MLT_LOG_INFO, (format), ## args)
-#define mlt_log_verbose(service, format, args, ...) mlt_log((service), MLT_LOG_VERBOSE, (format), ## args)
-#define mlt_log_timings(service, format, args, ...) mlt_log((service), MLT_LOG_TIMINGS, (format), ## args)
-#define mlt_log_debug(service, format, args, ...) mlt_log((service), MLT_LOG_DEBUG, (format), ## args)
+#define mlt_log_panic(service, format, ...) mlt_log((service), MLT_LOG_PANIC, (format), ##__VA_ARGS__)
+#define mlt_log_fatal(service, format,  ...) mlt_log((service), MLT_LOG_FATAL, (format), ## __VA_ARGS__)
+#define mlt_log_error(service, format,  ...) mlt_log((service), MLT_LOG_ERROR, (format), ## __VA_ARGS__)
+#define mlt_log_warning(service, format,  ...) mlt_log((service), MLT_LOG_WARNING, (format), ## __VA_ARGS__)
+#define mlt_log_info(service, format,  ...) mlt_log((service), MLT_LOG_INFO, (format), ## __VA_ARGS__)
+#define mlt_log_verbose(service, format,  ...) mlt_log((service), MLT_LOG_VERBOSE, (format), ## __VA_ARGS__)
+#define mlt_log_timings(service, format,  ...) mlt_log((service), MLT_LOG_TIMINGS, (format), ## __VA_ARGS__)
+#define mlt_log_debug(service, format,  ...) mlt_log((service), MLT_LOG_DEBUG, (format), ## __VA_ARGS__)
 
-void mlt_vlog( void *service, int level, const char *fmt, va_list );
-int mlt_log_get_level( void );
-void mlt_log_set_level( int );
-void mlt_log_set_callback( void (*)( void*, int, const char*, va_list ) );
+MLT_DECLSPEC void mlt_vlog( void *service, int level, const char *fmt, va_list );
+MLT_DECLSPEC int mlt_log_get_level( void );
+MLT_DECLSPEC void mlt_log_set_level( int );
+MLT_DECLSPEC void mlt_log_set_callback( void (*)( void*, int, const char*, va_list ) );
 
 #define mlt_log_timings_begin() \
 { \
@@ -103,6 +103,6 @@ void mlt_log_set_callback( void (*)( void*, int, const char*, va_list ) );
 		__FILE__, __LINE__, msg, _mlt_log_timings_end - _mlt_log_timings_begin ); \
 }
 
-int64_t mlt_log_timings_now( void );
+MLT_DECLSPEC int64_t mlt_log_timings_now( void );
 
 #endif /* MLT_LOG_H */

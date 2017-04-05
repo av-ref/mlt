@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_profile.h
  * \brief video output definition
  * \see mlt_profile_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_PROFILE_H
 #define MLT_PROFILE_H
-
+#include "mlt_defines.h"
 #include "mlt_types.h"
 
 /** \brief Profile class
@@ -47,15 +47,15 @@ struct mlt_profile_s
 	int is_explicit;        /**< used internally to indicate if the profile was requested explicitly or computed or defaulted */
 };
 
-extern mlt_profile mlt_profile_init( const char *name );
-extern mlt_profile mlt_profile_load_file( const char *file );
-extern mlt_profile mlt_profile_load_properties( mlt_properties properties );
-extern mlt_profile mlt_profile_load_string( const char *string );
-extern double mlt_profile_fps( mlt_profile profile );
-extern double mlt_profile_sar( mlt_profile profile );
-extern double mlt_profile_dar( mlt_profile profile );
-extern void mlt_profile_close( mlt_profile profile );
-extern mlt_profile mlt_profile_clone( mlt_profile profile );
-extern mlt_properties mlt_profile_list( );
-extern void mlt_profile_from_producer( mlt_profile profile, mlt_producer producer );
+extern MLT_DECLSPEC mlt_profile mlt_profile_init( const char *name );
+extern MLT_DECLSPEC mlt_profile mlt_profile_load_file( const char *file );
+extern MLT_DECLSPEC mlt_profile mlt_profile_load_properties( mlt_properties properties );
+extern MLT_DECLSPEC mlt_profile mlt_profile_load_string( const char *string );
+extern MLT_DECLSPEC double mlt_profile_fps( mlt_profile profile );
+extern MLT_DECLSPEC double mlt_profile_sar( mlt_profile profile );
+extern MLT_DECLSPEC double mlt_profile_dar( mlt_profile profile );
+extern MLT_DECLSPEC void mlt_profile_close( mlt_profile profile );
+extern MLT_DECLSPEC mlt_profile mlt_profile_clone( mlt_profile profile );
+extern MLT_DECLSPEC mlt_properties mlt_profile_list( );
+extern MLT_DECLSPEC void mlt_profile_from_producer( mlt_profile profile, mlt_producer producer );
 #endif

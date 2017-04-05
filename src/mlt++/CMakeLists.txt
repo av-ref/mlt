@@ -68,7 +68,7 @@ set_property(TARGET mlt++ APPEND PROPERTY  COMPATIBLE_INTERFACE_STRING mlt++_MAJ
 
 # install target lib, dll, so, exe
 install(TARGETS mlt++ EXPORT MltTargets #install target: dll lib exe etc
-  LIBRARY DESTINATION lib/mlt
+  LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include

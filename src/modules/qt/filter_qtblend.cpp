@@ -1,4 +1,4 @@
-/*
+﻿/*
  * filter_lightshow.cpp -- animate color to the audio
  * Copyright (C) 2015 Meltytech, LLC
  *
@@ -177,7 +177,7 @@ mlt_filter filter_qtblend_init( mlt_profile profile, mlt_service_type type, cons
 	}
 	else
 	{
-		mlt_log_error( MLT_FILTER_SERVICE(filter), "Filter qtblend failed\n" );
+        mlt_log_error( MLT_FILTER_SERVICE(filter), "Filter qtblend failed\n", "" );
 
 		if( filter )
 		{

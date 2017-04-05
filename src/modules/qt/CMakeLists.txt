@@ -24,7 +24,7 @@ add_definitions( -DGPL3 -DUSE_QT_OPENGL )
 
 add_library(mltqt MODULE ${CSRCS} ${CPPSRCS})
 if(WIN32)
-    target_link_libraries( mltqt pthread mlt mlt++ m Qt5::Widgets Qt5::Gui Qt5::Core Qt5::Svg Qt5::Xml)
+    target_link_libraries( mltqt pthread_dll mlt mlt++ Qt5::Widgets Qt5::Gui Qt5::Core Qt5::Svg Qt5::Xml)
 else()
     target_link_libraries(mltqt mlt mlt++ m pthread Qt5::Widgets Qt5::Gui Qt5::Core Qt5::Svg Qt5::Xml)
 endif()
@@ -55,7 +55,7 @@ install(TARGETS mltqt EXPORT MltTargets #install target: dll lib exe etc
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-DESTINATION share/
+DESTINATION share/mlt
 FILES_MATCHING
 PATTERN "*.yml"
 )  #install dir

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * producer_tone.c -- audio tone generating producer
  * Copyright (C) 2014 Meltytech, LLC
  * Author: Brian Matherly <code@brianmatherly.com>
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define M_PI  3.141592
 static int producer_get_audio( mlt_frame frame, int16_t** buffer, mlt_audio_format* format, int* frequency, int* channels, int* samples )
 {
 	mlt_producer producer = mlt_frame_pop_audio( frame );
@@ -48,8 +49,8 @@ static int producer_get_audio( mlt_frame frame, int16_t** buffer, mlt_audio_form
 	long double first_sample = mlt_sample_calculator_to_now( fps, *frequency, position );
 	float a = mlt_properties_anim_get_double( producer_properties, "level", position, length );
 	long double f = mlt_properties_anim_get_double( producer_properties, "frequency", position, length );
-	long double p = mlt_properties_anim_get_double( producer_properties, "phase", position, length );
-	p = (M_PI / 180) * p; // Convert from degrees to radians
+    long double p = mlt_properties_anim_get_double( producer_properties, "phase", position, length );
+    p = (M_PI / 180) * p; // Convert from degrees to radians
 	a = pow( 10, a / 20.0 ); // Convert from dB to amplitude
 
 	for( s = 0; s < *samples; s++ )

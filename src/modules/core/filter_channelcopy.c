@@ -1,4 +1,4 @@
-/*
+﻿/*
  * filter_channelcopy.c -- copy one audio channel to another
  * Copyright (C) 2003-2014 Meltytech, LLC
  *
@@ -144,7 +144,7 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 			break;
 		}
 		default:
-			mlt_log_error( MLT_FILTER_SERVICE( filter ), "Invalid audio format\n" );
+            mlt_log_error( MLT_FILTER_SERVICE( filter ), "Invalid audio format\n", "" );
 			break;
 	}
 

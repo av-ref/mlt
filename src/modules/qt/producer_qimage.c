@@ -1,4 +1,4 @@
-/*
+﻿/*
  * producer_image.c -- a QT/QImage based producer for MLT
  * Copyright (C) 2006 Visual Media
  * Author: Charles Yates <charles.yates@gmail.com>
@@ -32,7 +32,12 @@
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+
+//#ifdef MSVC
+#include <Windows.h>
+//#else
+//#include <unistd.h>
+//#endif
 #include <ctype.h>
 
 static void load_filenames( producer_qimage self, mlt_properties producer_properties );

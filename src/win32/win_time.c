@@ -1,7 +1,7 @@
 ﻿
 
 #include <time.h>
-
+#include <Winsock2.h>
 
 /* FILETIME of Jan 1 1970 00:00:00. */
 static const unsigned __int64 epoch = ((unsigned __int64) 116444736000000000ULL);
@@ -12,7 +12,7 @@ static const unsigned __int64 epoch = ((unsigned __int64) 116444736000000000ULL)
  * Note: this function is not for Win32 high precision timing purpose. See
  * elapsed_time().
  */
-#include < time.h >
+#include <time.h>
 #include <windows.h> //I've ommited this line.
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
   #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64

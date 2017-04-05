@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt.h
  * \brief header file for lazy client and implementation code :-)
  *
@@ -35,7 +35,7 @@
 extern "C"
 {
 #endif
-
+#include "mlt_defines.h"
 #include "mlt_animation.h"
 #include "mlt_factory.h"
 #include "mlt_frame.h"

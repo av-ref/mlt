@@ -1,4 +1,4 @@
-/*
+﻿/*
  * consumer_avformat.c -- an encoder based on avformat
  * Copyright (C) 2003-2017 Meltytech, LLC
  *
@@ -30,8 +30,64 @@
 #include <string.h>
 #include <limits.h>
 #include <pthread.h>
-#include <sys/time.h>
+#include <time.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
+//#include "../../win32/win_time.h"
+
+#ifdef _WIN32
+#include <time.h>
+//#include <Winsock2.h>
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+#else
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+#endif
+
+struct timezone
+{
+  int  tz_minuteswest; /* minutes W of Greenwich */
+  int  tz_dsttime;     /* type of dst correction */
+};
+
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+  FILETIME ft;
+  unsigned __int64 tmpres = 0;
+  static int tzflag;
+
+  if (NULL != tv)
+  {
+    GetSystemTimeAsFileTime(&ft);
+
+    tmpres |= ft.dwHighDateTime;
+    tmpres <<= 32;
+    tmpres |= ft.dwLowDateTime;
+
+    /*converting file time to unix epoch*/
+    tmpres -= DELTA_EPOCH_IN_MICROSECS;
+    tmpres /= 10;  /*convert into microseconds*/
+    tv->tv_sec = (long)(tmpres / 1000000UL);
+    tv->tv_usec = (long)(tmpres % 1000000UL);
+  }
+
+  if (NULL != tz)
+  {
+    if (!tzflag)
+    {
+      _tzset();
+      tzflag++;
+    }
+    tz->tz_minuteswest = _timezone / 60;
+    tz->tz_dsttime = _daylight;
+  }
+
+  return 0;
+}
+#endif
 
 // avformat header files
 #include <libavformat/avformat.h>
@@ -535,7 +591,7 @@ static int pick_sample_fmt( mlt_properties properties, AVCodec *codec )
 			break;
 		}
 	}
-	mlt_log_error( properties, "audio codec sample_fmt not compatible" );
+    mlt_log_error( properties, "audio codec sample_fmt not compatible" , "");
 
 	return AV_SAMPLE_FMT_NONE;
 }
@@ -638,7 +694,7 @@ static AVStream *add_audio_stream( mlt_consumer consumer, AVFormatContext *oc, A
 	}
 	else
 	{
-		mlt_log_error( MLT_CONSUMER_SERVICE( consumer ), "Could not allocate a stream for audio\n" );
+        mlt_log_error( MLT_CONSUMER_SERVICE( consumer ), "Could not allocate a stream for audio\n" , "");
 	}
 
 	return st;
@@ -888,7 +944,7 @@ static AVStream *add_video_stream( mlt_consumer consumer, AVFormatContext *oc, A
 			int start, end, q;
 			int e = sscanf( rc_override, "%d,%d,%d", &start, &end, &q );
 			if ( e != 3 )
-				mlt_log_warning( MLT_CONSUMER_SERVICE( consumer ), "Error parsing rc_override\n" );
+                mlt_log_warning( MLT_CONSUMER_SERVICE( consumer ), "Error parsing rc_override\n" , "");
 			c->rc_override = av_realloc( c->rc_override, sizeof( RcOverride ) * ( i + 1 ) );
 			c->rc_override[i].start_frame = start;
 			c->rc_override[i].end_frame = end;
@@ -958,7 +1014,7 @@ static AVStream *add_video_stream( mlt_consumer consumer, AVFormatContext *oc, A
 					fseek( f, 0, SEEK_SET );
 					logbuffer = av_malloc( size + 1 );
 					if ( !logbuffer )
-						mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "Could not allocate log buffer\n" );
+                        mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "Could not allocate log buffer\n", "" );
 					else
 					{
 						if ( size >= 0 )
@@ -975,7 +1031,7 @@ static AVStream *add_video_stream( mlt_consumer consumer, AVFormatContext *oc, A
 	}
 	else
 	{
-		mlt_log_error( MLT_CONSUMER_SERVICE( consumer ), "Could not allocate a stream for video\n" );
+        mlt_log_error( MLT_CONSUMER_SERVICE( consumer ), "Could not allocate a stream for video\n", "" );
 	}
  
 	return st;
@@ -1431,7 +1487,7 @@ static void *consumer_thread( void *arg )
 			else
 			{
 				av_free( buffer );
-				mlt_log_error( MLT_CONSUMER_SERVICE(consumer), "failed to setup output redirection\n" );
+                mlt_log_error( MLT_CONSUMER_SERVICE(consumer), "failed to setup output redirection\n", "" );
 			}
 		}
 		// Open the output file, if needed
@@ -1472,7 +1528,7 @@ static void *consumer_thread( void *arg )
 			audio_avframe->nb_samples = audio_input_nb_samples;
 			audio_avframe->channel_layout = c->channel_layout;
 		} else {
-			mlt_log_error( MLT_CONSUMER_SERVICE(consumer), "failed to allocate audio AVFrame\n" );
+            mlt_log_error( MLT_CONSUMER_SERVICE(consumer), "failed to allocate audio AVFrame\n", "" );
 			mlt_events_fire( properties, "consumer-fatal-error", NULL );
 			goto on_fatal_error;
 		}
@@ -1688,8 +1744,8 @@ static void *consumer_thread( void *arg )
 
 										while ( --s ) {
 											memcpy( dest, src, sample_bytes );
-											dest += current_channels * sample_bytes;
-											src += channels * sample_bytes;
+                                            (char*)dest += current_channels * sample_bytes;
+                                            (char*)src += channels * sample_bytes;
 										}
 									}
 								}
@@ -1729,7 +1785,7 @@ static void *consumer_thread( void *arg )
 							pkt.stream_index = stream->index;
 							if ( av_interleaved_write_frame( oc, &pkt ) )
 							{
-								mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "error writing audio frame\n" );
+                                mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "error writing audio frame\n", "" );
 								mlt_events_fire( properties, "consumer-fatal-error", NULL );
 								goto on_fatal_error;
 							}
@@ -1916,7 +1972,7 @@ static void *consumer_thread( void *arg )
 #endif
 					if ( ret )
 					{
-						mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "error writing video frame\n" );
+                        mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "error writing video frame\n" , "");
 						mlt_events_fire( properties, "consumer-fatal-error", NULL );
 						goto on_fatal_error;
 					}
@@ -1932,7 +1988,7 @@ static void *consumer_thread( void *arg )
 				mlt_log_debug( MLT_CONSUMER_SERVICE( consumer ), "audio pts %f ", audio_pts );
 			if ( video_st )
 				mlt_log_debug( MLT_CONSUMER_SERVICE( consumer ), "video pts %f ", video_pts );
-			mlt_log_debug( MLT_CONSUMER_SERVICE( consumer ), "\n" );
+            mlt_log_debug( MLT_CONSUMER_SERVICE( consumer ), "\n" , "");
 		}
 
 		if ( real_time_output == 1 && frames % 2 == 0 )
@@ -2026,7 +2082,7 @@ static void *consumer_thread( void *arg )
 			pkt.stream_index = audio_st[0]->index;
 			if ( av_interleaved_write_frame( oc, &pkt ) != 0 )
 			{
-				mlt_log_warning( MLT_CONSUMER_SERVICE( consumer ), "error writing flushed audio frame\n" );
+                mlt_log_warning( MLT_CONSUMER_SERVICE( consumer ), "error writing flushed audio frame\n", "" );
 				break;
 			}
 		}
@@ -2079,7 +2135,7 @@ static void *consumer_thread( void *arg )
 			// write the compressed frame in the media file
 			if ( av_interleaved_write_frame( oc, &pkt ) != 0 )
 			{
-				mlt_log_fatal( MLT_CONSUMER_SERVICE(consumer), "error writing flushed video frame\n" );
+                mlt_log_fatal( MLT_CONSUMER_SERVICE(consumer), "error writing flushed video frame\n", "" );
 				mlt_events_fire( properties, "consumer-fatal-error", NULL );
 				goto on_fatal_error;
 			}

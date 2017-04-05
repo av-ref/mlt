@@ -33,6 +33,8 @@
 //#include <sys/time.h>
 //#include <time.h>
 #include "../win32/win_time.h"
+#include <time.h>
+#include <Winsock2.h>
 
 /** Define this if you want an automatic deinterlace (if necessary) when the
  * consumer's producer is not running at normal speed.

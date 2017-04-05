@@ -51,6 +51,7 @@ mlt_slices.c
         )
 
 set(HDRS
+    mlt.h
         mlt_consumer.h
 mlt_version.h
 mlt_factory.h
@@ -82,11 +83,13 @@ mlt_slices.h
         )
 
 #add_definitions( -DPREFIX_DATA="\"${mltdatadir}\"" -DPREFIX_LIB="\"$(moduledir)\"")
-
+add_definitions(-DMLT_EXPORTS)
 if(WIN32)
     set(SRCS ${SRCS}
             ../win32/win32.c
+            ../win32/win32.h
             ../win32/win_time.c
+            ../win32/win_time.h
             )
     #LDFLAGS += -liconv
 endif(WIN32)
@@ -110,7 +113,7 @@ set_property(TARGET mlt APPEND PROPERTY  COMPATIBLE_INTERFACE_STRING mlt_MAJOR_V
 
 # install target lib, dll, so, exe
 install(TARGETS mlt EXPORT MltTargets #install target: dll lib exe etc
-  LIBRARY DESTINATION lib/mlt
+  LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include

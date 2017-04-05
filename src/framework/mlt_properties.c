@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_properties.c
  * \brief Properties class definition
  * \see mlt_properties_s
@@ -2446,7 +2446,7 @@ mlt_animation mlt_properties_get_animation( mlt_properties self, const char *nam
  * \return true if error
  */
 
-extern int mlt_properties_set_rect( mlt_properties self, const char *name, mlt_rect value )
+extern MLT_DECLSPEC int mlt_properties_set_rect( mlt_properties self, const char *name, mlt_rect value )
 {
 	int error = 1;
 
@@ -2475,7 +2475,7 @@ extern int mlt_properties_set_rect( mlt_properties self, const char *name, mlt_r
  * \return the rectangle value, the rectangle fields will be DBL_MIN if not found
  */
 
-extern mlt_rect mlt_properties_get_rect( mlt_properties self, const char* name )
+extern MLT_DECLSPEC mlt_rect mlt_properties_get_rect( mlt_properties self, const char* name )
 {
 	property_list *list = self->local;
 	mlt_property value = mlt_properties_find( self, name );
@@ -2496,7 +2496,7 @@ extern mlt_rect mlt_properties_get_rect( mlt_properties self, const char* name )
  * \return true if error
  */
 
-extern int mlt_properties_anim_set_rect( mlt_properties self, const char *name, mlt_rect value,
+extern MLT_DECLSPEC int mlt_properties_anim_set_rect( mlt_properties self, const char *name, mlt_rect value,
 	int position, int length , mlt_keyframe_type keyframe_type )
 {
 	int error = 1;
@@ -2532,7 +2532,7 @@ extern int mlt_properties_anim_set_rect( mlt_properties self, const char *name, 
  * \return the rectangle value, the rectangle fields will be DBL_MIN if not found
  */
 
-extern mlt_rect mlt_properties_anim_get_rect( mlt_properties self, const char *name, int position, int length )
+extern MLT_DECLSPEC mlt_rect mlt_properties_anim_get_rect( mlt_properties self, const char *name, int position, int length )
 {
 	mlt_profile profile = mlt_properties_get_data( self, "_profile", NULL );
 	double fps = mlt_profile_fps( profile );

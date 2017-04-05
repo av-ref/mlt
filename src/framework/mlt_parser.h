@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_parser.h
  * \brief service parsing functionality
  * \see mlt_parser_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_PARSER_H
 #define MLT_PARSER_H
-
+#include "mlt_defines.h"
 #include "mlt_types.h"
 
 /** \brief Parser class
@@ -51,9 +51,9 @@ struct mlt_parser_s
 	int ( *on_end_transition )( mlt_parser self, mlt_transition object );
 };
 
-extern mlt_parser mlt_parser_new( );
-extern mlt_properties mlt_parser_properties( mlt_parser self );
-extern int mlt_parser_start( mlt_parser self, mlt_service object );
-extern void mlt_parser_close( mlt_parser self );
+extern MLT_DECLSPEC mlt_parser mlt_parser_new( );
+extern MLT_DECLSPEC mlt_properties mlt_parser_properties( mlt_parser self );
+extern MLT_DECLSPEC int mlt_parser_start( mlt_parser self, mlt_service object );
+extern MLT_DECLSPEC void mlt_parser_close( mlt_parser self );
 
 #endif

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * consumer_qglsl.cpp
  * Copyright (C) 2012-2014 Dan Dennedy <dan@dennedy.org>
  *
@@ -163,7 +163,7 @@ static void onThreadStarted(mlt_properties owner, mlt_consumer consumer)
 		mlt_events_fire(filter_properties, "init glsl", NULL);
 		if (!mlt_properties_get_int(filter_properties, "glsl_supported")) {
 			mlt_log_fatal(service,
-				"OpenGL Shading Language rendering is not supported on this machine.\n" );
+                "OpenGL Shading Language rendering is not supported on this machine.\n" , "");
 			mlt_events_fire(properties, "consumer-fatal-error", NULL);
 		}
 	}

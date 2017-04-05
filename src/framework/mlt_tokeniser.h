@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_tokeniser.h
  * \brief string tokeniser
  * \see mlt_tokeniser_s
@@ -26,7 +26,7 @@
 /** \brief Tokeniser class
  *
  */
-
+#include "mlt_defines.h"
 typedef struct
 {
 	char *input;
@@ -39,11 +39,11 @@ typedef struct
 /* Remote parser API.
 */
 
-extern mlt_tokeniser mlt_tokeniser_init( );
-extern int mlt_tokeniser_parse_new( mlt_tokeniser tokeniser, char *text, const char *delimiter );
-extern char *mlt_tokeniser_get_input( mlt_tokeniser tokeniser );
-extern int mlt_tokeniser_count( mlt_tokeniser tokeniser );
-extern char *mlt_tokeniser_get_string( mlt_tokeniser tokeniser, int index );
-extern void mlt_tokeniser_close( mlt_tokeniser tokeniser );
+extern MLT_DECLSPEC mlt_tokeniser mlt_tokeniser_init( );
+extern MLT_DECLSPEC int mlt_tokeniser_parse_new( mlt_tokeniser tokeniser, char *text, const char *delimiter );
+extern MLT_DECLSPEC char *mlt_tokeniser_get_input( mlt_tokeniser tokeniser );
+extern MLT_DECLSPEC int mlt_tokeniser_count( mlt_tokeniser tokeniser );
+extern MLT_DECLSPEC char *mlt_tokeniser_get_string( mlt_tokeniser tokeniser, int index );
+extern MLT_DECLSPEC void mlt_tokeniser_close( mlt_tokeniser tokeniser );
 
 #endif

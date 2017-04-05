@@ -27,6 +27,7 @@
 //#include <iconv.h>
 #include <locale.h>
 #include <ctype.h>
+#include "win32.h"
 #include "../framework/mlt_properties.h"
 #include "../framework/mlt_log.h"
 

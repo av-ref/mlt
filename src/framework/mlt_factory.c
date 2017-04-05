@@ -100,10 +100,29 @@ static void mlt_factory_create_done( mlt_listener listener, mlt_properties owner
  * \return the repository
  */
 
+char *dirname(char *path)
+{
+    static char name[MAX_PATH];
+    int i;
+
+    if (path == NULL || strlen(path) == 0)
+        return (char*)".";
+
+    i = strlen(path) - 1;
+
+    while (path[i] != '\\' && path[i] != '/' && i >= 0)
+        i--;
+
+    strncpy(name, path, i); // + i + 1, MAX_PATH);
+    path[i]='\0';
+
+    return name;
+}
+
 mlt_repository mlt_factory_init( const char *directory, const char * datadir )
 {
 	// Load the system locales
-	setlocale( LC_ALL, "" );
+//	setlocale( LC_ALL, "" );
 
 	if ( ! global_properties )
 		global_properties = mlt_properties_new( );
@@ -129,10 +148,10 @@ mlt_repository mlt_factory_init( const char *directory, const char * datadir )
 		_NSGetExecutablePath( path, &size );
 #endif
 #if defined(_WIN32) || (defined(__APPLE__) && defined(RELOCATABLE))
-//		char *path2 = strdup( path );
-//		char *appdir = dirname( path2 );
-//		mlt_properties_set( global_properties, "MLT_APPDIR", appdir );
-//		free( path2 );
+        char *path2 = strdup( path );
+        char *appdir = dirname( path2 );
+        mlt_properties_set( global_properties, "MLT_APPDIR", appdir );
+        free( path2 );
 #endif
 	}
 

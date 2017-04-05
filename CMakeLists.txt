@@ -9,29 +9,51 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_PREFIX_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake  )
 
-message( "path in cmake_prefix_path" )
-foreach( path ${CMAKE_PREFIX_PATH} )
-    message( ${path} )
-endforeach( path )
-
 project(mlt)
 
 if(WIN32)
     set(CMAKE_INSTALL_PREFIX "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
-    set(ThirdPartyPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
+    set(ThirdPartyPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
     link_directories( ${ThirdPartyPath}/lib )
     INCLUDE_DIRECTORIES(${ThirdPartyPath}/include)
 
-    set( WinFFmpegPath "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
+    set( WinFFmpegPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
     set(WinFFmpegCOMPONENTS avcodec avdevice avfilter avformat avutil swscale)
     foreach(comp ${WinFFmpegCOMPONENTS})
-        set( _${comp}_INCLUDE_DIRS ${WinFFmpegPath}include  )
-        set( _${comp}_LIBRARY_DIRS ${WinFFmpegPath}lib  )
+        set( _${comp}_INCLUDE_DIRS ${WinFFmpegPath}/include  )
+        set( _${comp}_LIBRARY_DIRS ${WinFFmpegPath}/lib  )
     endforeach(comp)
-#    link_directories( ${FFMPEG_WIN_PATH}/lib )
-
-    #set( PTHREAD_PATH "f:///github.cpp-repo/pthread-release-x64-msvc2015")
 endif()
+
+option(USE_QT "use qt module" ON)
+
+
+if(WIN32)
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Core
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt3Widgets
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Gui
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Test
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Svg
+    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Xml
+    )
+else(WIN32)
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Core
+        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Widgets
+        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Gui
+        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Test
+        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Svg
+        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Xml
+        )
+endif(WIN32)
+
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Test REQUIRED)
+find_package(Qt5Svg REQUIRED)
+find_package(Qt5Xml REQUIRED)
 
 # Put the libaries and binaries that get built into directories at the
 # top of the build tree rather than in hard-to-find leaf
@@ -57,22 +79,8 @@ if(NOT MSVC_IDE)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
-    set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
+    set( CMAKE_BUILD_TYPE "Release" )
 endif()
-
-
-#################################################################################
-# options
-#################################################################################
-option(ENABLE_CPPUNIT "Enable the CppUnit" ON)
-option(ENABLE_XML "Enable the XML" ON)
-option(ENABLE_JSON "Enable the JSON" ON)
-option(ENABLE_MONGODB "Enable MongoDB" ON)
-option(ENABLE_PDF "Enable PDF" OFF)
-option(ENABLE_UTIL "Enable Util" ON)
-option(ENABLE_NET "Enable Net" ON)
-option(ENABLE_NETSSL "Enable NetSSL" ON)
-option(ENABLE_NETSSL_WIN "Enable NetSSL Windows" OFF)
 
 
 set( PREFIX_LIB "lib/mlt")

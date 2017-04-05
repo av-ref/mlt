@@ -1,4 +1,4 @@
-/*
+﻿/*
  * filter_audiochannels.c -- convert from one audio format to another
  * Copyright (C) 2009-2014 Meltytech, LLC
  *
@@ -152,13 +152,13 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 		}
 		else if ( *format == mlt_audio_s32 )
 		{
-			int32_t* flin = *buffer;
-			int32_t* frin = *buffer + (*samples * sizeof(float));
-			int32_t* cin  = *buffer + (2 * *samples * sizeof(float));
-			int32_t* slin = *buffer + (4 * *samples * sizeof(float));
-			int32_t* srin = *buffer + (5 * *samples * sizeof(float));
-			int32_t* lout = *buffer;
-			int32_t* rout = *buffer + (*samples * sizeof(float));
+            int32_t* flin = (int32_t*)*buffer;
+            int32_t* frin = (int32_t*)*buffer + (*samples * sizeof(float));
+            int32_t* cin  = (int32_t*)*buffer + (2 * *samples * sizeof(float));
+            int32_t* slin = (int32_t*)*buffer + (4 * *samples * sizeof(float));
+            int32_t* srin = (int32_t*)*buffer + (5 * *samples * sizeof(float));
+            int32_t* lout = (int32_t*)*buffer;
+            int32_t* rout = (int32_t*)*buffer + (*samples * sizeof(float));
 			int i;
 			for ( i = 0; i < *samples; i++ )
 			{
@@ -173,13 +173,13 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 		}
 		else if ( *format == mlt_audio_float )
 		{
-			float* flin = *buffer;
-			float* frin = *buffer + (*samples * sizeof(float));
-			float* cin  = *buffer + (2 * *samples * sizeof(float));
-			float* slin = *buffer + (4 * *samples * sizeof(float));
-			float* srin = *buffer + (5 * *samples * sizeof(float));
-			float* lout = *buffer;
-			float* rout = *buffer + (*samples * sizeof(float));
+            float* flin = (float*)*buffer;
+            float* frin = (float*)*buffer + (*samples * sizeof(float));
+            float* cin  = (float*)*buffer + (2 * *samples * sizeof(float));
+            float* slin = (float*)*buffer + (4 * *samples * sizeof(float));
+            float* srin = (float*)*buffer + (5 * *samples * sizeof(float));
+            float* lout = (float*)*buffer;
+            float* rout = (float*)*buffer + (*samples * sizeof(float));
 			int i;
 			for ( i = 0; i < *samples; i++ )
 			{

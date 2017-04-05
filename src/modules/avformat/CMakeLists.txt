@@ -51,7 +51,7 @@ install(TARGETS avformat EXPORT MltTargets #install target: dll lib exe etc
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-DESTINATION share/
+DESTINATION share/mlt
 FILES_MATCHING
 PATTERN "blacklist.txt"
 PATTERN "*.yml"

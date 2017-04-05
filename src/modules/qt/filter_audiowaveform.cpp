@@ -1,4 +1,4 @@
-/*
+﻿/*
  * filter_audiowaveform.cpp -- audio waveform visualization filter
  * Copyright (c) 2015-2016 Meltytech, LLC
  * Author: Brian Matherly <code@brianmatherly.com>
@@ -181,7 +181,7 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 		// video. If the audio is not preprocessed, this filter will process it.
 		// If this filter processes the audio, it could cause confusion for the
 		// consumer if it needs different audio properties.
-		mlt_log_warning( MLT_FILTER_SERVICE(filter), "Audio not preprocessed. Potential audio distortion.\n" );
+        mlt_log_warning( MLT_FILTER_SERVICE(filter), "Audio not preprocessed. Potential audio distortion.\n", "" );
 		preprocess_warned = true;
 	}
 

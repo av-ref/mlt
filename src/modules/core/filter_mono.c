@@ -1,4 +1,4 @@
-/*
+﻿/*
  * filter_mono.c -- mix all channels to a mono signal across n channels
  * Copyright (C) 2003-2014 Meltytech, LLC
  *
@@ -128,7 +128,7 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 			break;
 		}
 		default:
-			mlt_log_error( NULL, "[filter mono] Invalid audio format\n" );
+            mlt_log_error( NULL, "[filter mono] Invalid audio format\n", "" );
 			break;
 	}
 	if ( size > *samples * channels_out )

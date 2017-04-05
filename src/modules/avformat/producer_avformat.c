@@ -1,4 +1,4 @@
-/*
+﻿/*
  * producer_avformat.c -- avformat producer
  * Copyright (C) 2003-2017 Meltytech, LLC
  *
@@ -1752,7 +1752,7 @@ static int producer_get_image( mlt_frame frame, uint8_t **buffer, mlt_image_form
 					}
 					if ( !self->seekable && mlt_properties_get_int( properties, "exit_on_disconnect" ) )
 					{
-						mlt_log_fatal( MLT_PRODUCER_SERVICE(producer), "Exiting with error due to disconnected source.\n" );
+                        mlt_log_fatal( MLT_PRODUCER_SERVICE(producer), "Exiting with error due to disconnected source.\n","" );
 						exit( EXIT_FAILURE );
 					}
 					// Send null packets to drain decoder.
@@ -2647,9 +2647,10 @@ static int producer_get_audio( mlt_frame frame, void **buffer, mlt_audio_format 
 						pthread_mutex_unlock( &self->packets_mutex );
 						goto exit_get_audio;
 					}
-					if ( !self->seekable && mlt_properties_get_int( properties, "exit_on_disconnect" ) )
+                    if ( !self->seekable && mlt_properties_get_int( properties, "exit_on_disconnect" ,"") )
 					{
-						mlt_log_fatal( MLT_PRODUCER_SERVICE(producer), "Exiting with error due to disconnected source.\n" );
+                        mlt_log_fatal( MLT_PRODUCER_SERVICE(producer),
+                                       "Exiting with error due to disconnected source.\n","" );
 						exit( EXIT_FAILURE );
 					}
 				}
@@ -2735,7 +2736,7 @@ static int producer_get_audio( mlt_frame frame, void **buffer, mlt_audio_format 
 				memcpy( *buffer, src, size * *channels * sizeof_sample );
 				// supply the remaining requested samples as silence
 				if ( *samples > self->audio_used[ index ] )
-					memset( *buffer + size * *channels * sizeof_sample, 0, ( *samples - self->audio_used[ index ] ) * *channels * sizeof_sample );
+                    memset( (char*)*buffer + size * *channels * sizeof_sample, 0, ( *samples - self->audio_used[ index ] ) * *channels * sizeof_sample );
 				// reposition the samples within audio_buffer
 				self->audio_used[ index ] -= size;
 				memmove( src, src + size * *channels * sizeof_sample, self->audio_used[ index ] * *channels * sizeof_sample );
@@ -2948,7 +2949,7 @@ static int producer_get_frame( mlt_producer producer, mlt_frame_ptr frame, int i
 
 static void producer_avformat_close( producer_avformat self )
 {
-	mlt_log_debug( NULL, "producer_avformat_close\n" );
+    mlt_log_debug( NULL, "producer_avformat_close\n" ,"");
 
 	// Cleanup av contexts
 	av_free_packet( &self->pkt );
