@@ -1,4 +1,4 @@
-/*
+﻿/*
  * qimage_wrapper.cpp -- a QT/QImage based producer for MLT
  * Copyright (C) 2006 Visual Media
  * Author: Charles Yates <charles.yates@gmail.com>
@@ -40,7 +40,8 @@
 #endif
 
 #include <cmath>
-#include <unistd.h>
+#include <Windows.h>
+//#include <unistd.h>
 
 extern "C" {
 

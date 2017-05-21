@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_multitrack.h
  * \brief multitrack service class
  * \see mlt_multitrack_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_MULITRACK_H
 #define MLT_MULITRACK_H
-
+#include "mlt_defines.h"
 #include "mlt_producer.h"
 
 /** \brief Track class used by mlt_multitrack_s
@@ -57,18 +57,18 @@ struct mlt_multitrack_s
 #define MLT_MULTITRACK_SERVICE( multitrack )	MLT_PRODUCER_SERVICE( MLT_MULTITRACK_PRODUCER( multitrack ) )
 #define MLT_MULTITRACK_PROPERTIES( multitrack )	MLT_SERVICE_PROPERTIES( MLT_MULTITRACK_SERVICE( multitrack ) )
 
-extern mlt_multitrack mlt_multitrack_init( );
-extern mlt_producer mlt_multitrack_producer( mlt_multitrack self );
-extern mlt_service mlt_multitrack_service( mlt_multitrack self );
-extern mlt_properties mlt_multitrack_properties( mlt_multitrack self );
-extern int mlt_multitrack_connect( mlt_multitrack self, mlt_producer producer, int track );
-extern int mlt_multitrack_insert( mlt_multitrack self, mlt_producer producer, int track );
-extern int mlt_multitrack_disconnect( mlt_multitrack self, int track );
-extern mlt_position mlt_multitrack_clip( mlt_multitrack self, mlt_whence whence, int index );
-extern void mlt_multitrack_close( mlt_multitrack self );
-extern int mlt_multitrack_count( mlt_multitrack self );
-extern void mlt_multitrack_refresh( mlt_multitrack self );
-extern mlt_producer mlt_multitrack_track( mlt_multitrack self, int track );
+extern MLT_DECLSPEC mlt_multitrack mlt_multitrack_init( );
+extern MLT_DECLSPEC mlt_producer mlt_multitrack_producer( mlt_multitrack self );
+extern MLT_DECLSPEC mlt_service mlt_multitrack_service( mlt_multitrack self );
+extern MLT_DECLSPEC mlt_properties mlt_multitrack_properties( mlt_multitrack self );
+extern MLT_DECLSPEC int mlt_multitrack_connect( mlt_multitrack self, mlt_producer producer, int track );
+extern MLT_DECLSPEC int mlt_multitrack_insert( mlt_multitrack self, mlt_producer producer, int track );
+extern MLT_DECLSPEC int mlt_multitrack_disconnect( mlt_multitrack self, int track );
+extern MLT_DECLSPEC mlt_position mlt_multitrack_clip( mlt_multitrack self, mlt_whence whence, int index );
+extern MLT_DECLSPEC void mlt_multitrack_close( mlt_multitrack self );
+extern MLT_DECLSPEC int mlt_multitrack_count( mlt_multitrack self );
+extern MLT_DECLSPEC void mlt_multitrack_refresh( mlt_multitrack self );
+extern MLT_DECLSPEC mlt_producer mlt_multitrack_track( mlt_multitrack self, int track );
 
 #endif
 

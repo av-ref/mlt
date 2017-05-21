@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_slices.h
  * \brief sliced threading processing helper
  * \see mlt_slices_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_SLICES_H
 #define MLT_SLICES_H
-
+#include "mlt_defines.h"
 #include "mlt_types.h"
 
 /**
@@ -34,22 +34,22 @@ struct mlt_slices_s;
 
 typedef int (*mlt_slices_proc)( int id, int idx, int jobs, void* cookie );
 
-extern mlt_slices mlt_slices_init( int threads, int policy, int priority );
+extern MLT_DECLSPEC mlt_slices mlt_slices_init( int threads, int policy, int priority );
 
-extern void mlt_slices_close( mlt_slices ctx );
+extern MLT_DECLSPEC void mlt_slices_close( mlt_slices ctx );
 
-extern void mlt_slices_run( mlt_slices ctx, int jobs, mlt_slices_proc proc, void* cookie );
+extern MLT_DECLSPEC void mlt_slices_run( mlt_slices ctx, int jobs, mlt_slices_proc proc, void* cookie );
 
-extern int mlt_slices_count_normal();
+extern MLT_DECLSPEC int mlt_slices_count_normal();
 
-extern int mlt_slices_count_rr();
+extern MLT_DECLSPEC int mlt_slices_count_rr();
 
-extern int mlt_slices_count_fifo();
+extern MLT_DECLSPEC int mlt_slices_count_fifo();
 
-extern void mlt_slices_run_normal( int jobs, mlt_slices_proc proc, void* cookie );
+extern MLT_DECLSPEC void mlt_slices_run_normal( int jobs, mlt_slices_proc proc, void* cookie );
 
-extern void mlt_slices_run_rr( int jobs, mlt_slices_proc proc, void* cookie );
+extern MLT_DECLSPEC void mlt_slices_run_rr( int jobs, mlt_slices_proc proc, void* cookie );
 
-extern void mlt_slices_run_fifo( int jobs, mlt_slices_proc proc, void* cookie );
+extern MLT_DECLSPEC void mlt_slices_run_fifo( int jobs, mlt_slices_proc proc, void* cookie );
 
 #endif

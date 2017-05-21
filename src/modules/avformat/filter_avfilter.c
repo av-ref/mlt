@@ -1,4 +1,4 @@
-/*
+﻿/*
  * filter_avfilter.c -- provide various filters based on libavfilter
  * Copyright (C) 2016 Meltytech, LLC
  * Author: Brian Matherly <code@brianmatherly.com>
@@ -178,7 +178,7 @@ static void init_audio_filtergraph( mlt_filter filter, mlt_audio_format format, 
 	// Create the new filter graph
 	pdata->avfilter_graph = avfilter_graph_alloc();
 	if( !pdata->avfilter_graph ) {
-		mlt_log_error( filter, "Cannot create filter graph\n" );
+        mlt_log_error( filter, "Cannot create filter graph\n", "" );
 	}
 
 	// Set thread count if supported.
@@ -190,7 +190,7 @@ static void init_audio_filtergraph( mlt_filter filter, mlt_audio_format format, 
 	// Initialize the buffer source filter context
 	pdata->avbuffsrc_ctx = avfilter_graph_alloc_filter( pdata->avfilter_graph, abuffersrc, "in");
 	if( !pdata->avbuffsrc_ctx ) {
-		mlt_log_error( filter, "Cannot create audio buffer source\n" );
+        mlt_log_error( filter, "Cannot create audio buffer source\n","" );
 	}
 	ret = av_opt_set_int( pdata->avbuffsrc_ctx, "sample_rate", sample_rates[0], AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
@@ -210,60 +210,60 @@ static void init_audio_filtergraph( mlt_filter filter, mlt_audio_format format, 
 	}
 	ret = avfilter_init_str( pdata->avbuffsrc_ctx, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot int buffer source\n" );
+        mlt_log_error( filter, "Cannot int buffer source\n","" );
 	}
 
 	// Initialize the buffer sink filter context
 	pdata->avbuffsink_ctx = avfilter_graph_alloc_filter( pdata->avfilter_graph, abuffersink, "in");
 	if( !pdata->avbuffsink_ctx ) {
-		mlt_log_error( filter, "Cannot create audio buffer sink\n" );
+        mlt_log_error( filter, "Cannot create audio buffer sink\n","" );
 	}
 	ret = av_opt_set_int_list( pdata->avbuffsink_ctx, "sample_fmts", sample_fmts, -1, AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot set sink sample formats\n" );
+        mlt_log_error( filter, "Cannot set sink sample formats\n","" );
 	}
 	ret = av_opt_set_int_list( pdata->avbuffsink_ctx, "sample_rates", sample_rates, -1, AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot set sink sample rates\n" );
+        mlt_log_error( filter, "Cannot set sink sample rates\n" ,"");
 	}
 	ret = av_opt_set_int_list( pdata->avbuffsink_ctx, "channel_counts", channel_counts, -1, AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot set sink channel counts\n" );
+        mlt_log_error( filter, "Cannot set sink channel counts\n","" );
 	}
 	ret = av_opt_set_int_list( pdata->avbuffsink_ctx, "channel_layouts", channel_layouts, -1, AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot set sink channel_layouts\n" );
+        mlt_log_error( filter, "Cannot set sink channel_layouts\n","" );
 	}
 	ret = avfilter_init_str(  pdata->avbuffsink_ctx, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot init buffer sink\n" );
+        mlt_log_error( filter, "Cannot init buffer sink\n" ,"");
 	}
 
 	// Initialize the filter context
 	pdata->avfilter_ctx = avfilter_graph_alloc_filter( pdata->avfilter_graph, pdata->avfilter, "filt" );
 	if( !pdata->avfilter_ctx ) {
-		mlt_log_error( filter, "Cannot create audio filter\n" );
+        mlt_log_error( filter, "Cannot create audio filter\n","" );
 	}
 	set_avfilter_options( filter );
 	ret = avfilter_init_str(  pdata->avfilter_ctx, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot init filter\n" );
+        mlt_log_error( filter, "Cannot init filter\n","" );
 	}
 
 	// Connect the filters
 	ret = avfilter_link( pdata->avbuffsrc_ctx, 0, pdata->avfilter_ctx, 0 );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot link src to filter\n" );
+        mlt_log_error( filter, "Cannot link src to filter\n","" );
 	}
 	ret = avfilter_link( pdata->avfilter_ctx, 0, pdata->avbuffsink_ctx, 0 );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot link filter to sink\n" );
+        mlt_log_error( filter, "Cannot link filter to sink\n","" );
 	}
 
 	// Configure the graph.
 	ret = avfilter_graph_config( pdata->avfilter_graph, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot configure the filter graph\n" );
+        mlt_log_error( filter, "Cannot configure the filter graph\n" ,"");
 	}
 }
 
@@ -290,7 +290,7 @@ static void init_image_filtergraph( mlt_filter filter, mlt_image_format format, 
 	// Create the new filter graph
 	pdata->avfilter_graph = avfilter_graph_alloc();
 	if( !pdata->avfilter_graph ) {
-		mlt_log_error( filter, "Cannot create filter graph\n" );
+        mlt_log_error( filter, "Cannot create filter graph\n","" );
 	}
 
 	// Set thread count if supported.
@@ -302,7 +302,7 @@ static void init_image_filtergraph( mlt_filter filter, mlt_image_format format, 
 	// Initialize the buffer source filter context
 	pdata->avbuffsrc_ctx = avfilter_graph_alloc_filter( pdata->avfilter_graph, buffersrc, "in");
 	if( !pdata->avbuffsrc_ctx ) {
-		mlt_log_error( filter, "Cannot create audio buffer source\n" );
+        mlt_log_error( filter, "Cannot create audio buffer source\n","" );
 	}
 	ret = av_opt_set_int( pdata->avbuffsrc_ctx, "width", width, AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
@@ -330,27 +330,27 @@ static void init_image_filtergraph( mlt_filter filter, mlt_image_format format, 
 	}
 	ret = avfilter_init_str( pdata->avbuffsrc_ctx, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot int buffer source\n" );
+        mlt_log_error( filter, "Cannot int buffer source\n" ,"");
 	}
 
 	// Initialize the buffer sink filter context
 	pdata->avbuffsink_ctx = avfilter_graph_alloc_filter( pdata->avfilter_graph, buffersink, "in");
 	if( !pdata->avbuffsink_ctx ) {
-		mlt_log_error( filter, "Cannot create audio buffer sink\n" );
+        mlt_log_error( filter, "Cannot create audio buffer sink\n","" );
 	}
 	ret = av_opt_set_int_list( pdata->avbuffsink_ctx, "pix_fmts", pixel_fmts, -1, AV_OPT_SEARCH_CHILDREN );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot set sink pixel formats\n" );
+        mlt_log_error( filter, "Cannot set sink pixel formats\n","" );
 	}
 	ret = avfilter_init_str(  pdata->avbuffsink_ctx, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot init buffer sink\n" );
+        mlt_log_error( filter, "Cannot init buffer sink\n","" );
 	}
 
 	// Initialize the filter context
 	pdata->avfilter_ctx = avfilter_graph_alloc_filter( pdata->avfilter_graph, pdata->avfilter, "filt" );
 	if( !pdata->avfilter_ctx ) {
-		mlt_log_error( filter, "Cannot create audio filter\n" );
+        mlt_log_error( filter, "Cannot create audio filter\n","" );
 	}
 	set_avfilter_options( filter );
 
@@ -385,17 +385,17 @@ static void init_image_filtergraph( mlt_filter filter, mlt_image_format format, 
 	// Connect the filters
 	ret = avfilter_link( pdata->avbuffsrc_ctx, 0, pdata->avfilter_ctx, 0 );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot link src to filter\n" );
+        mlt_log_error( filter, "Cannot link src to filter\n","" );
 	}
 	ret = avfilter_link( pdata->avfilter_ctx, 0, pdata->avbuffsink_ctx, 0 );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot link filter to sink\n" );
+        mlt_log_error( filter, "Cannot link filter to sink\n" ,"");
 	}
 
 	// Configure the graph.
 	ret = avfilter_graph_config( pdata->avfilter_graph, NULL );
 	if( ret < 0 ) {
-		mlt_log_error( filter, "Cannot configure the filter graph\n" );
+        mlt_log_error( filter, "Cannot configure the filter graph\n","" );
 	}
 }
 
@@ -430,7 +430,7 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 		pdata->avinframe->pts = samplepos;
 		ret = av_frame_get_buffer( pdata->avinframe, 1 );
 		if( ret < 0 ) {
-			mlt_log_error( filter, "Cannot get in frame buffer\n" );
+            mlt_log_error( filter, "Cannot get in frame buffer\n", "" );
 		}
 
 		if( av_sample_fmt_is_planar( pdata->avinframe->format ) )
@@ -454,11 +454,11 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 		// Run the frame through the filter graph
 		ret = av_buffersrc_add_frame( pdata->avbuffsrc_ctx, pdata->avinframe );
 		if( ret < 0 ) {
-			mlt_log_error( filter, "Cannot add frame to buffer source\n" );
+            mlt_log_error( filter, "Cannot add frame to buffer source\n", "" );
 		}
 		ret = av_buffersink_get_frame( pdata->avbuffsink_ctx, pdata->avoutframe );
 		if( ret < 0 ) {
-			mlt_log_error( filter, "Cannot get frame from buffer sink\n" );
+            mlt_log_error( filter, "Cannot get frame from buffer sink\n","" );
 		}
 
 		// Sanity check the output frame
@@ -466,7 +466,7 @@ static int filter_get_audio( mlt_frame frame, void **buffer, mlt_audio_format *f
 			*samples != pdata->avoutframe->nb_samples ||
 			*frequency != pdata->avoutframe->sample_rate )
 		{
-			mlt_log_error( filter, "Unexpected return format\n" );
+            mlt_log_error( filter, "Unexpected return format\n" , "");
 			goto exit;
 		}
 
@@ -554,7 +554,7 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 
 		ret = av_frame_get_buffer( pdata->avinframe, 1 );
 		if( ret < 0 ) {
-			mlt_log_error( filter, "Cannot get in frame buffer\n" );
+            mlt_log_error( filter, "Cannot get in frame buffer\n", "" );
 		}
 
 		// Set up the input frame
@@ -593,18 +593,18 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 		// Run the frame through the filter graph
 		ret = av_buffersrc_add_frame( pdata->avbuffsrc_ctx, pdata->avinframe );
 		if( ret < 0 ) {
-			mlt_log_error( filter, "Cannot add frame to buffer source\n" );
+            mlt_log_error( filter, "Cannot add frame to buffer source\n", "" );
 		}
 		ret = av_buffersink_get_frame( pdata->avbuffsink_ctx, pdata->avoutframe );
 		if( ret < 0 ) {
-			mlt_log_error( filter, "Cannot get frame from buffer sink\n" );
+            mlt_log_error( filter, "Cannot get frame from buffer sink\n" , "");
 		}
 
 		// Sanity check the output frame
 		if( *width != pdata->avoutframe->width ||
 			*height != pdata->avoutframe->height )
 		{
-			mlt_log_error( filter, "Unexpected return format\n" );
+            mlt_log_error( filter, "Unexpected return format\n", "" );
 			goto exit;
 		}
 

@@ -1,4 +1,4 @@
-
+﻿
 
 
 #ifeq ($(targetos), Darwin)
@@ -51,6 +51,7 @@ mlt_slices.c
         )
 
 set(HDRS
+    mlt.h
         mlt_consumer.h
 mlt_version.h
 mlt_factory.h
@@ -82,10 +83,13 @@ mlt_slices.h
         )
 
 #add_definitions( -DPREFIX_DATA="\"${mltdatadir}\"" -DPREFIX_LIB="\"$(moduledir)\"")
-
+add_definitions(-DMLT_EXPORTS)
 if(WIN32)
     set(SRCS ${SRCS}
             ../win32/win32.c
+            ../win32/win32.h
+            ../win32/win_time.c
+            ../win32/win_time.h
             )
     #LDFLAGS += -liconv
 endif(WIN32)
@@ -93,8 +97,72 @@ endif(WIN32)
 add_library(mlt SHARED ${SRCS} )
 
 if(WIN32)
-    target_link_libraries( mlt pthread )
+#    target_include_directories(mlt PRIVATE ${PTHREAD_PATH}/include)
+#    target_link_libraries( mlt pthread_dll.lib)
+    target_link_libraries( mlt pthread_dll dl)
 else()
     target_link_libraries( mlt pthread m dl)
 endif(WIN32)
 
+set(Mlt_VERSION 1.0.0)
+
+set_property(TARGET mlt PROPERTY VERSION ${Mlt_VERSION})
+set_property(TARGET mlt PROPERTY SOVERSION 1)
+set_property(TARGET mlt PROPERTY INTERFACE_mlt_MAJOR_VERSION 1)
+set_property(TARGET mlt APPEND PROPERTY  COMPATIBLE_INTERFACE_STRING mlt_MAJOR_VERSION )
+
+# install target lib, dll, so, exe
+install(TARGETS mlt EXPORT MltTargets #install target: dll lib exe etc
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# install headers
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DESTINATION include/ FILES_MATCHING PATTERN "*.h")  #install dir
+
+# install version file
+include(CMakePackageConfigHelpers)
+set(ConfigPackageLocation lib/cmake/mlt)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/MltConfigVersion.cmake"
+  VERSION ${Mlt_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+install(   #install file
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/MltConfigVersion.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)
+
+#install export file 
+export(EXPORT MltTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/MltTargets.cmake"
+  NAMESPACE mlt::
+)
+install(EXPORT MltTargets
+  FILE
+    MltTargets.cmake
+  NAMESPACE
+    mlt::
+  DESTINATION
+    ${ConfigPackageLocation}
+)
+
+#install config file
+configure_file(../../cmake/mltConfig.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/MltConfig.cmake"
+  COPYONLY
+)
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/MltConfig.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)

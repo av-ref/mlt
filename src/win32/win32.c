@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file win32.c
  * \brief Miscellaneous utility functions for Windows.
  *
@@ -24,9 +24,10 @@
 #include <windows.h>
 #include <pthread.h>
 
-#include <iconv.h>
+//#include <iconv.h>
 #include <locale.h>
 #include <ctype.h>
+#include "win32.h"
 #include "../framework/mlt_properties.h"
 #include "../framework/mlt_log.h"
 
@@ -70,59 +71,64 @@ int setenv(const char *name, const char *value, int overwrite)
 static int iconv_from_utf8( mlt_properties properties, const char *prop_name, const char *prop_name_out, const char* encoding )
 {
 	char *text = mlt_properties_get( properties, prop_name );
-	int result = 0;
+    mlt_properties_set(properties, prop_name_out, text);
+    return 0;
+//	int result = 0;
 
-	if ( text ) {
-		iconv_t cd = iconv_open( encoding, "UTF-8" );
-		if ( cd != (iconv_t) -1 ) {
-			size_t inbuf_n = strlen( text );
-			size_t outbuf_n = inbuf_n * 6;
-			char *outbuf = mlt_pool_alloc( outbuf_n );
-			char *outbuf_p = outbuf;
+//	if ( text ) {
+//		iconv_t cd = iconv_open( encoding, "UTF-8" );
+//		if ( cd != (iconv_t) -1 ) {
+//			size_t inbuf_n = strlen( text );
+//			size_t outbuf_n = inbuf_n * 6;
+//			char *outbuf = mlt_pool_alloc( outbuf_n );
+//			char *outbuf_p = outbuf;
 
-			memset( outbuf, 0, outbuf_n );
+//			memset( outbuf, 0, outbuf_n );
 
-			if ( text != NULL && strcmp( text, "" ) && iconv( cd, &text, &inbuf_n, &outbuf_p, &outbuf_n ) != -1 )
-				mlt_properties_set( properties, prop_name_out, outbuf );
-			else
-				mlt_properties_set( properties, prop_name_out, "" );
+//			if ( text != NULL && strcmp( text, "" ) && iconv( cd, &text, &inbuf_n, &outbuf_p, &outbuf_n ) != -1 )
+//				mlt_properties_set( properties, prop_name_out, outbuf );
+//			else
+//				mlt_properties_set( properties, prop_name_out, "" );
 
-			mlt_pool_release( outbuf );
-			result = iconv_close( cd );
-		} else {
-			result = -1;
-		}
-	}
-	return result;
+//			mlt_pool_release( outbuf );
+//			result = iconv_close( cd );
+//		} else {
+//			result = -1;
+//		}
+//	}
+//	return result;
 }
 
 static int iconv_to_utf8( mlt_properties properties, const char *prop_name, const char *prop_name_out, const char* encoding )
 {
 	char *text = mlt_properties_get( properties, prop_name );
-	int result = 0;
+    mlt_properties_set(properties, prop_name_out, text);
+    return 0;
 
-	if ( text ) {
-		iconv_t cd = iconv_open( "UTF-8", encoding );
-		if ( cd != (iconv_t) -1 ) {
-			size_t inbuf_n = strlen( text );
-			size_t outbuf_n = inbuf_n * 6;
-			char *outbuf = mlt_pool_alloc( outbuf_n );
-			char *outbuf_p = outbuf;
+//	int result = 0;
 
-			memset( outbuf, 0, outbuf_n );
+//	if ( text ) {
+//		iconv_t cd = iconv_open( "UTF-8", encoding );
+//		if ( cd != (iconv_t) -1 ) {
+//			size_t inbuf_n = strlen( text );
+//			size_t outbuf_n = inbuf_n * 6;
+//			char *outbuf = mlt_pool_alloc( outbuf_n );
+//			char *outbuf_p = outbuf;
 
-			if ( text != NULL && strcmp( text, "" ) && iconv( cd, &text, &inbuf_n, &outbuf_p, &outbuf_n ) != -1 )
-				mlt_properties_set( properties, prop_name_out, outbuf );
-			else
-				mlt_properties_set( properties, prop_name_out, "" );
+//			memset( outbuf, 0, outbuf_n );
 
-			mlt_pool_release( outbuf );
-			result = iconv_close( cd );
-		} else {
-			result = -1;
-		}
-	}
-	return result;
+//			if ( text != NULL && strcmp( text, "" ) && iconv( cd, &text, &inbuf_n, &outbuf_p, &outbuf_n ) != -1 )
+//				mlt_properties_set( properties, prop_name_out, outbuf );
+//			else
+//				mlt_properties_set( properties, prop_name_out, "" );
+
+//			mlt_pool_release( outbuf );
+//			result = iconv_close( cd );
+//		} else {
+//			result = -1;
+//		}
+//	}
+//	return result;
 }
 
 int mlt_properties_from_utf8( mlt_properties properties, const char *prop_name, const char *prop_name_out )

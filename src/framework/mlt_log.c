@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_log.c
  * \brief logging functions
  *
@@ -24,8 +24,13 @@
 
 #include <string.h>
 #ifndef NDEBUG
+#ifndef _WIN32
 #include <sys/time.h>
+#else
+#include "../win32/win_time.h"
 #include <time.h>
+#include <Winsock2.h>
+#endif
 #endif
 
 static int log_level = MLT_LOG_WARNING;

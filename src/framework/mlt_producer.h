@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_producer.h
  * \brief abstraction for all producer services
  * \see mlt_producer_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_PRODUCER_H
 #define MLT_PRODUCER_H
-
+#include "mlt_defines.h"
 #include "mlt_service.h"
 #include "mlt_filter.h"
 #include "mlt_profile.h"
@@ -95,35 +95,35 @@ struct mlt_producer_s
 #define MLT_PRODUCER_SERVICE( producer )	( &( producer )->parent )
 #define MLT_PRODUCER_PROPERTIES( producer )	MLT_SERVICE_PROPERTIES( MLT_PRODUCER_SERVICE( producer ) )
 
-extern int mlt_producer_init( mlt_producer self, void *child );
-extern mlt_producer mlt_producer_new( mlt_profile );
-extern mlt_service mlt_producer_service( mlt_producer self );
-extern mlt_properties mlt_producer_properties( mlt_producer self );
-extern int mlt_producer_seek( mlt_producer self, mlt_position position );
-extern int mlt_producer_seek_time( mlt_producer self, const char* time );
-extern mlt_position mlt_producer_position( mlt_producer self );
-extern mlt_position mlt_producer_frame( mlt_producer self );
-char* mlt_producer_frame_time( mlt_producer self, mlt_time_format );
-extern int mlt_producer_set_speed( mlt_producer self, double speed );
-extern double mlt_producer_get_speed( mlt_producer self );
-extern double mlt_producer_get_fps( mlt_producer self );
-extern int mlt_producer_set_in_and_out( mlt_producer self, mlt_position in, mlt_position out );
-extern int mlt_producer_clear( mlt_producer self );
-extern mlt_position mlt_producer_get_in( mlt_producer self );
-extern mlt_position mlt_producer_get_out( mlt_producer self );
-extern mlt_position mlt_producer_get_playtime( mlt_producer self );
-extern mlt_position mlt_producer_get_length( mlt_producer self );
-extern char* mlt_producer_get_length_time( mlt_producer self, mlt_time_format );
-extern void mlt_producer_prepare_next( mlt_producer self );
-extern int mlt_producer_attach( mlt_producer self, mlt_filter filter );
-extern int mlt_producer_detach( mlt_producer self, mlt_filter filter );
-extern mlt_filter mlt_producer_filter( mlt_producer self, int index );
-extern mlt_producer mlt_producer_cut( mlt_producer self, int in, int out );
-extern int mlt_producer_is_cut( mlt_producer self );
-extern int mlt_producer_is_mix( mlt_producer self );
-extern int mlt_producer_is_blank( mlt_producer self );
-extern mlt_producer mlt_producer_cut_parent( mlt_producer self );
-extern int mlt_producer_optimise( mlt_producer self );
-extern void mlt_producer_close( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_init( mlt_producer self, void *child );
+extern MLT_DECLSPEC mlt_producer mlt_producer_new( mlt_profile );
+extern MLT_DECLSPEC mlt_service mlt_producer_service( mlt_producer self );
+extern MLT_DECLSPEC mlt_properties mlt_producer_properties( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_seek( mlt_producer self, mlt_position position );
+extern MLT_DECLSPEC int mlt_producer_seek_time( mlt_producer self, const char* time );
+extern MLT_DECLSPEC mlt_position mlt_producer_position( mlt_producer self );
+extern MLT_DECLSPEC mlt_position mlt_producer_frame( mlt_producer self );
+extern MLT_DECLSPEC char* mlt_producer_frame_time( mlt_producer self, mlt_time_format );
+extern MLT_DECLSPEC int mlt_producer_set_speed( mlt_producer self, double speed );
+extern MLT_DECLSPEC double mlt_producer_get_speed( mlt_producer self );
+extern MLT_DECLSPEC double mlt_producer_get_fps( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_set_in_and_out( mlt_producer self, mlt_position in, mlt_position out );
+extern MLT_DECLSPEC int mlt_producer_clear( mlt_producer self );
+extern MLT_DECLSPEC mlt_position mlt_producer_get_in( mlt_producer self );
+extern MLT_DECLSPEC mlt_position mlt_producer_get_out( mlt_producer self );
+extern MLT_DECLSPEC mlt_position mlt_producer_get_playtime( mlt_producer self );
+extern MLT_DECLSPEC mlt_position mlt_producer_get_length( mlt_producer self );
+extern MLT_DECLSPEC char* mlt_producer_get_length_time( mlt_producer self, mlt_time_format );
+extern MLT_DECLSPEC void mlt_producer_prepare_next( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_attach( mlt_producer self, mlt_filter filter );
+extern MLT_DECLSPEC int mlt_producer_detach( mlt_producer self, mlt_filter filter );
+extern MLT_DECLSPEC mlt_filter mlt_producer_filter( mlt_producer self, int index );
+extern MLT_DECLSPEC mlt_producer mlt_producer_cut( mlt_producer self, int in, int out );
+extern MLT_DECLSPEC int mlt_producer_is_cut( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_is_mix( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_is_blank( mlt_producer self );
+extern MLT_DECLSPEC mlt_producer mlt_producer_cut_parent( mlt_producer self );
+extern MLT_DECLSPEC int mlt_producer_optimise( mlt_producer self );
+extern MLT_DECLSPEC void mlt_producer_close( mlt_producer self );
 
 #endif

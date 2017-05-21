@@ -43,12 +43,15 @@ MltController::~MltController ()
 void MltController::init ()
 {
     QDir dir(QApplication::applicationDirPath());
-//    qDebug()<< dir.currentPath();
     dir.cdUp();
     dir.cd("lib");
     dir.cd("mlt");
-    Mlt::Factory::init(dir.path().toStdString().c_str());
-    Mlt::Factory::init();
+    QDir data(QApplication::applicationDirPath());
+    data.cdUp();
+    data.cd("share");
+    data.cd("mlt");
+    Mlt::Factory::init(dir.path().toStdString().c_str(), data.path().toStdString().c_str());
+//    Mlt::Factory::init();
 }
 
 int MltController::open (const char* url, const char* profile)

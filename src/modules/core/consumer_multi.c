@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2011-1024 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <sys/time.h>
+#include <time.h>
 
 // Forward references
 static int start( mlt_consumer consumer );

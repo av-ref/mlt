@@ -1,4 +1,4 @@
-/*
+﻿/*
  * producer_loader.c -- auto-load producer by file name extension
  * Copyright (C) 2003-2014 Meltytech, LLC
  *
@@ -93,7 +93,8 @@ static mlt_producer create_producer( mlt_profile profile, char *file )
 		if ( dictionary == NULL )
 		{
 			char temp[ 1024 ];
-			sprintf( temp, "%s/core/loader.dict", mlt_environment( "MLT_DATA" ) );
+            char * mltdata = mlt_environment("MLT_DATA");
+            sprintf( temp, "%s/core/loader.dict", mltdata );
 			dictionary = mlt_properties_load( temp );
 			mlt_factory_register_for_clean_up( dictionary, ( mlt_destructor )mlt_properties_close );
 		}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_transition.h
  * \brief abstraction for all transition services
  * \see mlt_transition_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_TRANSITION_H
 #define MLT_TRANSITION_H
-
+#include "mlt_defines.h"
 #include "mlt_service.h"
 
 /** \brief Transition abstract service class
@@ -63,22 +63,22 @@ struct mlt_transition_s
 #define MLT_TRANSITION_SERVICE( transition )		( &( transition )->parent )
 #define MLT_TRANSITION_PROPERTIES( transition )		MLT_SERVICE_PROPERTIES( MLT_TRANSITION_SERVICE( transition ) )
 
-extern int mlt_transition_init( mlt_transition self, void *child );
-extern mlt_transition mlt_transition_new( );
-extern mlt_service mlt_transition_service( mlt_transition self );
-extern mlt_properties mlt_transition_properties( mlt_transition self );
-extern int mlt_transition_connect( mlt_transition self, mlt_service producer, int a_track, int b_track );
-extern void mlt_transition_set_in_and_out( mlt_transition self, mlt_position in, mlt_position out );
-extern void mlt_transition_set_tracks( mlt_transition self, int a_track, int b_track );
-extern int mlt_transition_get_a_track( mlt_transition self );
-extern int mlt_transition_get_b_track( mlt_transition self );
-extern mlt_position mlt_transition_get_in( mlt_transition self );
-extern mlt_position mlt_transition_get_out( mlt_transition self );
-extern mlt_position mlt_transition_get_length( mlt_transition self );
-extern mlt_position mlt_transition_get_position( mlt_transition self, mlt_frame frame );
-extern double mlt_transition_get_progress( mlt_transition self, mlt_frame frame );
-extern double mlt_transition_get_progress_delta( mlt_transition self, mlt_frame frame );
-extern mlt_frame mlt_transition_process( mlt_transition self, mlt_frame a_frame, mlt_frame b_frame );
-extern void mlt_transition_close( mlt_transition self );
+extern MLT_DECLSPEC int mlt_transition_init( mlt_transition self, void *child );
+extern MLT_DECLSPEC mlt_transition mlt_transition_new( );
+extern MLT_DECLSPEC mlt_service mlt_transition_service( mlt_transition self );
+extern MLT_DECLSPEC mlt_properties mlt_transition_properties( mlt_transition self );
+extern MLT_DECLSPEC int mlt_transition_connect( mlt_transition self, mlt_service producer, int a_track, int b_track );
+extern MLT_DECLSPEC void mlt_transition_set_in_and_out( mlt_transition self, mlt_position in, mlt_position out );
+extern MLT_DECLSPEC void mlt_transition_set_tracks( mlt_transition self, int a_track, int b_track );
+extern MLT_DECLSPEC int mlt_transition_get_a_track( mlt_transition self );
+extern MLT_DECLSPEC int mlt_transition_get_b_track( mlt_transition self );
+extern MLT_DECLSPEC mlt_position mlt_transition_get_in( mlt_transition self );
+extern MLT_DECLSPEC mlt_position mlt_transition_get_out( mlt_transition self );
+extern MLT_DECLSPEC mlt_position mlt_transition_get_length( mlt_transition self );
+extern MLT_DECLSPEC mlt_position mlt_transition_get_position( mlt_transition self, mlt_frame frame );
+extern MLT_DECLSPEC double mlt_transition_get_progress( mlt_transition self, mlt_frame frame );
+extern MLT_DECLSPEC double mlt_transition_get_progress_delta( mlt_transition self, mlt_frame frame );
+extern MLT_DECLSPEC mlt_frame mlt_transition_process( mlt_transition self, mlt_frame a_frame, mlt_frame b_frame );
+extern MLT_DECLSPEC void mlt_transition_close( mlt_transition self );
 
 #endif

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_animation.h
  * \brief Property Animation class declaration
  * \see mlt_animation_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_ANIMATION_H
 #define MLT_ANIMATION_H
-
+#include "mlt_defines.h"
 #include "mlt_types.h"
 #include "mlt_property.h"
 
@@ -37,23 +37,23 @@ struct mlt_animation_item_s
 };
 typedef struct mlt_animation_item_s *mlt_animation_item; /**< pointer to an animation item */
 
-extern mlt_animation mlt_animation_new( );
-extern int mlt_animation_parse(mlt_animation self, const char *data, int length, double fps, locale_t locale );
-extern int mlt_animation_refresh( mlt_animation self, const char *data, int length );
-extern int mlt_animation_get_length( mlt_animation self );
-extern void mlt_animation_set_length( mlt_animation self, int length );
-extern int mlt_animation_parse_item( mlt_animation self, mlt_animation_item item, const char *data );
-extern int mlt_animation_get_item( mlt_animation self, mlt_animation_item item, int position );
-extern int mlt_animation_insert( mlt_animation self, mlt_animation_item item );
-extern int mlt_animation_remove( mlt_animation self, int position );
-extern void mlt_animation_interpolate( mlt_animation self );
-extern int mlt_animation_next_key( mlt_animation self, mlt_animation_item item, int position );
-extern int mlt_animation_prev_key( mlt_animation self, mlt_animation_item item, int position );
-extern char *mlt_animation_serialize_cut( mlt_animation self, int in, int out );
-extern char *mlt_animation_serialize( mlt_animation self );
-extern int mlt_animation_key_count( mlt_animation self );
-extern int mlt_animation_key_get( mlt_animation self, mlt_animation_item item, int index );
-extern void mlt_animation_close( mlt_animation self );
+extern MLT_DECLSPEC mlt_animation mlt_animation_new( );
+extern MLT_DECLSPEC int mlt_animation_parse(mlt_animation self, const char *data, int length, double fps, locale_t locale );
+extern MLT_DECLSPEC int mlt_animation_refresh( mlt_animation self, const char *data, int length );
+extern MLT_DECLSPEC int mlt_animation_get_length( mlt_animation self );
+extern MLT_DECLSPEC void mlt_animation_set_length( mlt_animation self, int length );
+extern MLT_DECLSPEC int mlt_animation_parse_item( mlt_animation self, mlt_animation_item item, const char *data );
+extern MLT_DECLSPEC int mlt_animation_get_item( mlt_animation self, mlt_animation_item item, int position );
+extern MLT_DECLSPEC int mlt_animation_insert( mlt_animation self, mlt_animation_item item );
+extern MLT_DECLSPEC int mlt_animation_remove( mlt_animation self, int position );
+extern MLT_DECLSPEC void mlt_animation_interpolate( mlt_animation self );
+extern MLT_DECLSPEC int mlt_animation_next_key( mlt_animation self, mlt_animation_item item, int position );
+extern MLT_DECLSPEC int mlt_animation_prev_key( mlt_animation self, mlt_animation_item item, int position );
+extern MLT_DECLSPEC char *mlt_animation_serialize_cut( mlt_animation self, int in, int out );
+extern MLT_DECLSPEC char *mlt_animation_serialize( mlt_animation self );
+extern MLT_DECLSPEC int mlt_animation_key_count( mlt_animation self );
+extern MLT_DECLSPEC int mlt_animation_key_get( mlt_animation self, mlt_animation_item item, int index );
+extern MLT_DECLSPEC void mlt_animation_close( mlt_animation self );
 
 #endif
 

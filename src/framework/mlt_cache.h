@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_cache.h
  * \brief least recently used cache
  * \see mlt_cache_s
@@ -22,20 +22,20 @@
 
 #ifndef MLT_CACHE_H
 #define MLT_CACHE_H
-
+#include "mlt_defines.h"
 #include "mlt_types.h"
 
-extern void *mlt_cache_item_data( mlt_cache_item item, int *size );
-extern void mlt_cache_item_close( mlt_cache_item item );
+extern MLT_DECLSPEC void *mlt_cache_item_data( mlt_cache_item item, int *size );
+extern MLT_DECLSPEC void mlt_cache_item_close( mlt_cache_item item );
 
-extern mlt_cache mlt_cache_init();
-extern void mlt_cache_set_size( mlt_cache cache, int size );
-extern int mlt_cache_get_size( mlt_cache cache );
-extern void mlt_cache_close( mlt_cache cache );
-extern void mlt_cache_purge( mlt_cache cache, void *object );
-extern void mlt_cache_put( mlt_cache cache, void *object, void* data, int size, mlt_destructor destructor );
-extern mlt_cache_item mlt_cache_get( mlt_cache cache, void *object );
-extern void mlt_cache_put_frame( mlt_cache cache, mlt_frame frame );
-extern mlt_frame mlt_cache_get_frame( mlt_cache cache, mlt_position position );
+extern MLT_DECLSPEC mlt_cache mlt_cache_init();
+extern MLT_DECLSPEC void mlt_cache_set_size( mlt_cache cache, int size );
+extern MLT_DECLSPEC int mlt_cache_get_size( mlt_cache cache );
+extern MLT_DECLSPEC void mlt_cache_close( mlt_cache cache );
+extern MLT_DECLSPEC void mlt_cache_purge( mlt_cache cache, void *object );
+extern MLT_DECLSPEC void mlt_cache_put( mlt_cache cache, void *object, void* data, int size, mlt_destructor destructor );
+extern MLT_DECLSPEC mlt_cache_item mlt_cache_get( mlt_cache cache, void *object );
+extern MLT_DECLSPEC void mlt_cache_put_frame( mlt_cache cache, mlt_frame frame );
+extern MLT_DECLSPEC mlt_frame mlt_cache_get_frame( mlt_cache cache, mlt_position position );
 
 #endif

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_factory.h
  * \brief the factory method interfaces
  *
@@ -22,6 +22,7 @@
 #ifndef MLT_FACTORY_H
 #define MLT_FACTORY_H
 
+#include "mlt_defines.h"
 #include "mlt_types.h"
 #include "mlt_profile.h"
 #include "mlt_repository.h"
@@ -45,18 +46,18 @@
  * \event \em consumer-create-done fired when a consumer registers itself
  */
 
-extern mlt_repository mlt_factory_init( const char *directory );
-extern mlt_repository mlt_factory_repository();
-extern const char *mlt_factory_directory( );
-extern char *mlt_environment( const char *name );
-extern int mlt_environment_set( const char *name, const char *value );
-extern mlt_properties mlt_factory_event_object( );
-extern mlt_producer mlt_factory_producer( mlt_profile profile, const char *service, const void *resource );
-extern mlt_filter mlt_factory_filter( mlt_profile profile, const char *name, const void *input );
-extern mlt_transition mlt_factory_transition( mlt_profile profile, const char *name, const void *input );
-extern mlt_consumer mlt_factory_consumer( mlt_profile profile, const char *name, const void *input );
-extern void mlt_factory_register_for_clean_up( void *ptr, mlt_destructor destructor );
-extern void mlt_factory_close( );
-extern mlt_properties mlt_global_properties( );
+extern MLT_DECLSPEC  mlt_repository mlt_factory_init( const char * sodir, const char * datadir );
+extern MLT_DECLSPEC mlt_repository mlt_factory_repository();
+extern MLT_DECLSPEC const char *mlt_factory_directory( );
+extern MLT_DECLSPEC char *mlt_environment( const char *name );
+extern MLT_DECLSPEC int mlt_environment_set( const char *name, const char *value );
+extern MLT_DECLSPEC mlt_properties mlt_factory_event_object( );
+extern MLT_DECLSPEC mlt_producer mlt_factory_producer( mlt_profile profile, const char *service, const void *resource );
+extern MLT_DECLSPEC mlt_filter mlt_factory_filter( mlt_profile profile, const char *name, const void *input );
+extern MLT_DECLSPEC mlt_transition mlt_factory_transition( mlt_profile profile, const char *name, const void *input );
+extern MLT_DECLSPEC mlt_consumer mlt_factory_consumer( mlt_profile profile, const char *name, const void *input );
+extern MLT_DECLSPEC void mlt_factory_register_for_clean_up( void *ptr, mlt_destructor destructor );
+extern MLT_DECLSPEC void mlt_factory_close( );
+extern MLT_DECLSPEC mlt_properties mlt_global_properties( );
 
 #endif

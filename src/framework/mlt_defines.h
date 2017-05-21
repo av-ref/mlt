@@ -1,9 +1,7 @@
 ﻿/**
- * \file mlt_pool.h
- * \brief memory pooling functionality
- * \see mlt_pool_s
- *
- * Copyright (C) 2003-2014 Meltytech, LLC
+ * MltConfig.h - Convenience header file for all mlt++ objects
+ * Copyright (C) 2004-2015 Meltytech, LLC
+ * Author: Charles Yates <charles.yates@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,15 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef MLT_POOL_H
-#define MLT_POOL_H
-#include "mlt_defines.h"
-extern MLT_DECLSPEC void mlt_pool_init( );
-extern MLT_DECLSPEC void *mlt_pool_alloc( int size );
-extern MLT_DECLSPEC void *mlt_pool_realloc( void *ptr, int size );
-extern MLT_DECLSPEC void mlt_pool_release( void *release );
-extern MLT_DECLSPEC void mlt_pool_purge( );
-extern MLT_DECLSPEC void mlt_pool_close( );
-extern MLT_DECLSPEC void mlt_pool_stat( );
+#ifndef MLT_CONFIG_H
+#define MLT_CONFIG_H
+
+#if defined(_WIN32)
+    #ifdef MLT_EXPORTS
+        #define MLT_DECLSPEC __declspec( dllexport )
+    #else
+        #define MLT_DECLSPEC __declspec( dllimport )
+    #endif
+
+#else
+    #if __GNUC__ >= 4
+        #define MLT_DECLSPEC __attribute__ ((visibility ("default")))
+    #else
+        #define MLT_DECLSPEC
+    #endif
+#endif
 
 #endif

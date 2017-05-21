@@ -1,4 +1,4 @@
-
+﻿
 set(SRCS
         MltAnimation.cpp
         MltConsumer.cpp
@@ -53,5 +53,71 @@ set(HDRS
         MltTransition.h
         )
 
+add_definitions(-DMLTPP_EXPORTS)
+
 add_library( mlt++ SHARED ${SRCS})
 target_link_libraries(mlt++ mlt)
+
+
+set(Mlt_VERSION 1.0.0)
+
+set_property(TARGET mlt++ PROPERTY VERSION ${Mlt_VERSION})
+set_property(TARGET mlt++ PROPERTY SOVERSION 1)
+set_property(TARGET mlt++ PROPERTY INTERFACE_mlt++_MAJOR_VERSION 1)
+set_property(TARGET mlt++ APPEND PROPERTY  COMPATIBLE_INTERFACE_STRING mlt++_MAJOR_VERSION )
+
+# install target lib, dll, so, exe
+install(TARGETS mlt++ EXPORT MltTargets #install target: dll lib exe etc
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# install headers
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DESTINATION include/ FILES_MATCHING PATTERN "*.h")  #install dir
+
+# install version file
+include(CMakePackageConfigHelpers)
+set(ConfigPackageLocation lib/cmake/mlt)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/Mlt++ConfigVersion.cmake"
+  VERSION ${Mlt_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+install(   #install file
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/Mlt++ConfigVersion.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)
+
+#install export file 
+export(EXPORT MltTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/Mlt++Targets.cmake"
+  NAMESPACE mlt::
+)
+install(EXPORT MltTargets
+  FILE
+    Mlt++Targets.cmake
+  NAMESPACE
+    mlt::
+  DESTINATION
+    ${ConfigPackageLocation}
+)
+
+#install config file
+configure_file(../../cmake/mlt++Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/Mlt++Config.cmake"
+  COPYONLY
+)
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/Mlt++Config.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_profile.c
  * \brief video output definition
  * \see mlt_profile_s
@@ -24,9 +24,26 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <libgen.h>
+//#include <libgen.h>
 #include <math.h>
+#define MAX_PATH 256
+char *basename(char *path)
+{
+    static char name[MAX_PATH];
+    int i;
 
+    if (path == NULL || strlen(path) == 0)
+        return (char*)".";
+
+    i = strlen(path) - 1;
+
+    while (path[i] != '\\' && path[i] != '/' && i >= 0)
+        i--;
+
+    strncpy(name, path + i + 1, MAX_PATH);
+
+    return name;
+}
 
 /** the default subdirectory of the datadir for holding profiles */
 #define PROFILES_DIR "/profiles/"

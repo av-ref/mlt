@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_version.h
  * \brief contains version information
  *
@@ -21,7 +21,7 @@
 
 #ifndef MLT_VERSION_H
 #define MLT_VERSION_H
-
+#include "mlt_defines.h"
 // Add quotes around any #define variables
 #define STRINGIZE2(s)           #s
 #define STRINGIZE(s)            STRINGIZE2(s)
@@ -32,10 +32,10 @@
 #define LIBMLT_VERSION_INT      ((LIBMLT_VERSION_MAJOR<<16)+(LIBMLT_VERSION_MINOR<<8)+LIBMLT_VERSION_REVISION)
 #define LIBMLT_VERSION          STRINGIZE(LIBMLT_VERSION_MAJOR.LIBMLT_VERSION_MINOR.LIBMLT_VERSION_REVISION)
 
-extern int mlt_version_get_int( );
-extern int mlt_version_get_major( );
-extern int mlt_version_get_minor( );
-extern int mlt_version_get_revision( );
-extern char *mlt_version_get_string( );
+extern MLT_DECLSPEC int mlt_version_get_int( );
+extern MLT_DECLSPEC int mlt_version_get_major( );
+extern MLT_DECLSPEC int mlt_version_get_minor( );
+extern MLT_DECLSPEC int mlt_version_get_revision( );
+extern MLT_DECLSPEC char *mlt_version_get_string( );
 
 #endif

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MltFactory.cpp - MLT Wrapper
  * Copyright (C) 2004-2017 Meltytech, LLC
  * Author: Charles Yates <charles.yates@gmail.com>
@@ -26,9 +26,9 @@
 #include "MltRepository.h"
 using namespace Mlt;
 
-Repository *Factory::init( const char *directory )
+Repository *Factory::init( const char *directory, const char * datadir )
 {
-	return new Repository( mlt_factory_init( directory ) );
+    return new Repository( mlt_factory_init( directory, datadir ) );
 }
 
 Properties *Factory::event_object( )

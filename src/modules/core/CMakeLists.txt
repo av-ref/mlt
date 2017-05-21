@@ -1,4 +1,4 @@
-
+﻿
 
 set(SRCS
         factory.c
@@ -88,15 +88,22 @@ set(HDRS
         )
 
 if(WIN32)
-    set(SRC ${SRC} ../../win/fnmatch.c)
-    set(HDRS ${HDRS} ../../win/fnmatch.h)
+    set(SRCS ${SRCS} ../../win32/fnmatch.c)
+    set(HDRS ${HDRS} ../../win32/fnmatch.h)
 endif(WIN32)
 
 add_library(mltcore MODULE ${SRCS})
-target_link_libraries(mltcore mlt m pthread)
+if(WIN32)
+    target_link_libraries(mltcore mlt pthread_dll)
+    target_include_directories(mltcore PRIVATE ../../win32)
+else()
+    target_link_libraries(mltcore mlt m pthread)
+endif()
+
 set_target_properties( mltcore
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${MLT_MODULE_DIRECTORY})
 
+set( ymls ${CMAKE_CURRENT_SOURCE_DIR}/*.yml)
 add_custom_command(
         TARGET mltcore
         POST_BUILD
@@ -104,7 +111,28 @@ add_custom_command(
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt/core
         COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/data_fx.properties ${MLT_META_DATA_DIRECTORY}/core/
-        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/loader.dict ${MLT_META_DATA_DIRECTORY}/core/
-        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/loader.ini ${MLT_META_DATA_DIRECTORY}/core/
-        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/*.yml  ${MLT_META_DATA_DIRECTORY}/core/
+        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/loader.dict  ${MLT_META_DATA_DIRECTORY}/core/
+        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/loader.ini    ${MLT_META_DATA_DIRECTORY}/core/
+#        COMMAND cmake -E copy ${ymls}           ${MLT_META_DATA_DIRECTORY}/core/
         )
+file(GLOB ymls *.yml)
+foreach(yml ${ymls})
+    file(COPY ${yml}
+        DESTINATION ${MLT_META_DATA_DIRECTORY}/core/)
+endforeach()
+
+install(TARGETS mltcore EXPORT MltTargets #install target: dll lib exe etc
+  LIBRARY DESTINATION lib/mlt
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} 
+DESTINATION share/mlt
+FILES_MATCHING 
+PATTERN "data_fx.properties"
+PATTERN "loader.dict"
+PATTERN "loader.ini"
+PATTERN "*.yml"
+)  #install dir

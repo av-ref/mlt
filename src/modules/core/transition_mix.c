@@ -1,4 +1,4 @@
-/*
+﻿/*
  * transition_mix.c -- mix two audio streams
  * Copyright (C) 2003-2016 Meltytech, LLC
  *
@@ -30,7 +30,7 @@
 #define MAX_SAMPLES  (192000/(24000/1001))
 #define SAMPLE_BYTES(samples, channels) ((samples) * (channels) * sizeof(float))
 #define MAX_BYTES    SAMPLE_BYTES( MAX_SAMPLES, MAX_CHANNELS )
-
+#define M_PI  3.1415926
 typedef struct transition_mix_s
 {
 	mlt_transition parent;

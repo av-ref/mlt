@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_repository.c
  * \brief provides a map between service and shared objects
  * \see mlt_repository_s
@@ -80,15 +80,15 @@ mlt_repository mlt_repository_init( const char *directory )
 	int plugin_count = 0;
 
 #ifdef _WIN32
-	char *syspath = getenv("PATH");
-	char *exedir = mlt_environment( "MLT_APPDIR" );
-	char *newpath = "PATH=";
-	newpath = calloc( 1, strlen( newpath )+ strlen( exedir ) + 1 + strlen( syspath ) + 1 );
-	strcat( newpath, "PATH=" );
-	strcat( newpath, exedir );
-	strcat( newpath, ";" );
-	strcat( newpath, syspath );
-	putenv(newpath);
+    char *syspath = getenv("PATH");
+    char *exedir = mlt_environment( "MLT_APPDIR" );
+    char *newpath = "PATH=";
+    newpath = calloc( 1, strlen( newpath )+ strlen( exedir ) + 1 + strlen( syspath ) + 1 );
+    strcat( newpath, "PATH=" );
+    strcat( newpath, exedir );
+    strcat( newpath, ";" );
+    strcat( newpath, syspath );
+    putenv(newpath);
 #endif
 
 	// Iterate over files
@@ -118,16 +118,21 @@ mlt_repository mlt_repository_init( const char *directory )
 				// Register the object file for closure
 				mlt_properties_set_data( &self->parent, object_name, object, 0, ( mlt_destructor )dlclose, NULL );
 				++plugin_count;
+                mlt_log_info( NULL, "%s: mlt object_name =  %s\n", __FUNCTION__, object_name );
 			}
 			else
 			{
 				dlclose( object );
+                mlt_log_warning( NULL, "%s: failed to load mlt_register %s\n ", __FUNCTION__, object_name);
 			}
 		}
 		else if ( strstr( object_name, "libmlt" ) )
 		{
 			mlt_log_warning( NULL, "%s: failed to dlopen %s\n  (%s)\n", __FUNCTION__, object_name, dlerror() );
 		}
+        else {
+            mlt_log_warning( NULL, "%s: failed to dlopen %s\n  (%s)\n", __FUNCTION__, object_name, dlerror() );
+        }
 	}
 
 	if ( !plugin_count )

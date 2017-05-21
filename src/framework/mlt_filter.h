@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_filter.h
  * \brief abstraction for all filter services
  * \see mlt_filter_s
@@ -22,7 +22,7 @@
 
 #ifndef MLT_FILTER_H
 #define MLT_FILTER_H
-
+#include "mlt_defines.h"
 #include "mlt_service.h"
 
 /** \brief Filter abstract service class
@@ -54,20 +54,20 @@ struct mlt_filter_s
 #define MLT_FILTER_SERVICE( filter )		( &( filter )->parent )
 #define MLT_FILTER_PROPERTIES( filter )		MLT_SERVICE_PROPERTIES( MLT_FILTER_SERVICE( filter ) )
 
-extern int mlt_filter_init( mlt_filter self, void *child );
-extern mlt_filter mlt_filter_new( );
-extern mlt_service mlt_filter_service( mlt_filter self );
-extern mlt_properties mlt_filter_properties( mlt_filter self );
-extern mlt_frame mlt_filter_process( mlt_filter self, mlt_frame that );
-extern int mlt_filter_connect( mlt_filter self, mlt_service producer, int index );
-extern void mlt_filter_set_in_and_out( mlt_filter self, mlt_position in, mlt_position out );
-extern int mlt_filter_get_track( mlt_filter self );
-extern mlt_position mlt_filter_get_in( mlt_filter self );
-extern mlt_position mlt_filter_get_out( mlt_filter self );
-extern mlt_position mlt_filter_get_length( mlt_filter self );
-extern mlt_position mlt_filter_get_length2( mlt_filter self, mlt_frame frame );
-extern mlt_position mlt_filter_get_position( mlt_filter self, mlt_frame frame );
-extern double mlt_filter_get_progress( mlt_filter self, mlt_frame frame );
-extern void mlt_filter_close( mlt_filter );
+extern MLT_DECLSPEC int mlt_filter_init( mlt_filter self, void *child );
+extern MLT_DECLSPEC mlt_filter mlt_filter_new( );
+extern MLT_DECLSPEC mlt_service mlt_filter_service( mlt_filter self );
+extern MLT_DECLSPEC mlt_properties mlt_filter_properties( mlt_filter self );
+extern MLT_DECLSPEC mlt_frame mlt_filter_process( mlt_filter self, mlt_frame that );
+extern MLT_DECLSPEC int mlt_filter_connect( mlt_filter self, mlt_service producer, int index );
+extern MLT_DECLSPEC void mlt_filter_set_in_and_out( mlt_filter self, mlt_position in, mlt_position out );
+extern MLT_DECLSPEC int mlt_filter_get_track( mlt_filter self );
+extern MLT_DECLSPEC mlt_position mlt_filter_get_in( mlt_filter self );
+extern MLT_DECLSPEC mlt_position mlt_filter_get_out( mlt_filter self );
+extern MLT_DECLSPEC mlt_position mlt_filter_get_length( mlt_filter self );
+extern MLT_DECLSPEC mlt_position mlt_filter_get_length2( mlt_filter self, mlt_frame frame );
+extern MLT_DECLSPEC mlt_position mlt_filter_get_position( mlt_filter self, mlt_frame frame );
+extern MLT_DECLSPEC double mlt_filter_get_progress( mlt_filter self, mlt_frame frame );
+extern MLT_DECLSPEC void mlt_filter_close( mlt_filter );
 
 #endif
