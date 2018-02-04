@@ -278,23 +278,23 @@ static int time_clock_to_frames( mlt_property self, const char *s, double fps, l
 	s = copy;
 	pos = strrchr( s, ':' );
 
-#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32)
+#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 	char *orig_localename = NULL;
 	if ( locale )
 	{
 		// Protect damaging the global locale from a temporary locale on another thread.
 		pthread_mutex_lock( &self->mutex );
-		
+
 		// Get the current locale
 		orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
-		
+
 		// Set the new locale
 		setlocale( LC_NUMERIC, locale );
 	}
 #endif
 
 	if ( pos ) {
-#if defined(__GLIBC__) || defined(__APPLE__)
+#if defined(__GLIBC__) || defined(__APPLE__) || HAVE_STRTOD_L
 		if ( locale )
 			seconds = strtod_l( pos + 1, NULL, locale );
 		else
@@ -312,7 +312,7 @@ static int time_clock_to_frames( mlt_property self, const char *s, double fps, l
 		}
 	}
 	else {
-#if defined(__GLIBC__) || defined(__APPLE__)
+#if defined(__GLIBC__) || defined(__APPLE__) || HAVE_STRTOD_L
 		if ( locale )
 			seconds = strtod_l( s, NULL, locale );
 		else
@@ -320,7 +320,7 @@ static int time_clock_to_frames( mlt_property self, const char *s, double fps, l
 			seconds = strtod( s, NULL );
 	}
 
-#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32)
+#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 	if ( locale ) {
 		// Restore the current locale
 		setlocale( LC_NUMERIC, orig_localename );
@@ -331,7 +331,7 @@ static int time_clock_to_frames( mlt_property self, const char *s, double fps, l
 
 	free( copy );
 
-	return lrint( fps * ( (hours * 3600) + (minutes * 60) + seconds ) );
+	return floor( fps * hours * 3600 ) + floor( fps * minutes * 60 ) + lrint( fps * seconds );
 }
 
 /** Parse a SMPTE timecode string.
@@ -378,7 +378,7 @@ static int time_code_to_frames( mlt_property self, const char *s, double fps )
 	}
 	free( copy );
 
-	return lrint( fps * ( (hours * 3600) + (minutes * 60) + seconds ) + frames );
+	return floor( fps * hours * 3600 ) + floor( fps * minutes * 60 ) + ceil( fps * seconds ) + frames;
 }
 
 /** Convert a string to an integer.
@@ -407,7 +407,7 @@ static int time_code_to_frames( mlt_property self, const char *s, double fps )
 static int mlt_property_atoi( mlt_property self, double fps, locale_t locale )
 {
 	const char *value = self->prop_string;
-	
+
 	// Parse a hex color value as #RRGGBB or #AARRGGBB.
 	if ( value[0] == '#' )
 	{
@@ -489,7 +489,7 @@ static double mlt_property_atof( mlt_property self, double fps, locale_t locale 
 		char *end = NULL;
 		double result;
 
-#if defined(__GLIBC__) || defined(__APPLE__)
+#if defined(__GLIBC__) || defined(__APPLE__) || HAVE_STRTOD_L
 		if ( locale )
 			result = strtod_l( value, &end, locale );
 		else
@@ -498,10 +498,10 @@ static double mlt_property_atof( mlt_property self, double fps, locale_t locale 
 		if ( locale ) {
 			// Protect damaging the global locale from a temporary locale on another thread.
 			pthread_mutex_lock( &self->mutex );
-			
+
 			// Get the current locale
 			orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
-			
+
 			// Set the new locale
 			setlocale( LC_NUMERIC, locale );
 		}
@@ -511,7 +511,7 @@ static double mlt_property_atof( mlt_property self, double fps, locale_t locale 
 		if ( end && end[0] == '%' )
 			result /= 100.0;
 
-#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32)
+#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 		if ( locale ) {
 			// Restore the current locale
 			setlocale( LC_NUMERIC, orig_localename );
@@ -850,7 +850,6 @@ static void time_smpte_from_frames( int frames, double fps, char *s, int drop )
 {
 	int hours, mins, secs;
 	char frame_sep = ':';
-	int temp_frames;
 
 	if ( fps == 30000.0/1001.0 )
 	{
@@ -867,13 +866,13 @@ static void time_smpte_from_frames( int frames, double fps, char *s, int drop )
 		}
 	}
 	hours = frames / ( fps * 3600 );
-	temp_frames = frames - hours * 3600 * fps;
+	frames -= floor( hours * 3600 * fps );
 
-	mins = temp_frames / ( fps * 60 );
-	temp_frames = frames - ( hours * 3600 + mins * 60 ) * fps;
+	mins = frames / ( fps * 60 );
+	frames -= floor( mins * 60 * fps );
 
-	secs = temp_frames / fps;
-	frames -= lrint( ( hours * 3600 + mins * 60 + secs ) * fps );
+	secs = frames / fps;
+	frames -= ceil( secs * fps );
 
 	sprintf( s, "%02d:%02d:%02d%c%0*d", hours, mins, secs, frame_sep,
 			 ( fps > 999? 4 : fps > 99? 3 : 2 ), frames );
@@ -891,13 +890,12 @@ static void time_clock_from_frames( int frames, double fps, char *s )
 {
 	int hours, mins;
 	double secs;
-	int temp_frames;
 
 	hours = frames / ( fps * 3600 );
-	temp_frames = frames - hours * 3600 * fps;
-	mins = temp_frames / ( fps * 60 );
-	frames -= lrint( ( hours * 3600 + mins * 60 ) * fps );
-	secs = (double) frames / fps;
+	frames -= floor( hours * 3600 * fps );
+	mins = frames / ( fps * 60 );
+	frames -= floor( mins * 60  * fps );
+	secs = frames / fps;
 
 	sprintf( s, "%02d:%02d:%06.3f", hours, mins, secs );
 }
@@ -920,13 +918,13 @@ char *mlt_property_get_time( mlt_property self, mlt_time_format format, double f
 	char *orig_localename = NULL;
 	int frames = 0;
 
-	// Optimization for mlt_time_frames
-	if ( format == mlt_time_frames )
-		return mlt_property_get_string_l( self, locale );
-
 	// Remove existing string
 	if ( self->prop_string )
 		mlt_property_set_int( self, mlt_property_get_int( self, fps, locale ) );
+
+	// Optimization for mlt_time_frames
+	if ( format == mlt_time_frames )
+		return mlt_property_get_string_l( self, locale );
 
 #if !defined(_WIN32)
 	// Use the specified locale
@@ -1032,8 +1030,8 @@ static int is_property_numeric( mlt_property self, locale_t locale )
 	{
 		double temp;
 		char *p = NULL;
-		
-#if defined(__GLIBC__) || defined(__APPLE__)
+
+#if defined(__GLIBC__) || defined(__APPLE__) || HAVE_STRTOD_L
 		if ( locale )
 			temp = strtod_l( self->prop_string, &p, locale );
 		else
@@ -1042,10 +1040,10 @@ static int is_property_numeric( mlt_property self, locale_t locale )
 		if ( locale ) {
 			// Protect damaging the global locale from a temporary locale on another thread.
 			pthread_mutex_lock( &self->mutex );
-			
+
 			// Get the current locale
 			orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
-			
+
 			// Set the new locale
 			setlocale( LC_NUMERIC, locale );
 		}
@@ -1053,7 +1051,7 @@ static int is_property_numeric( mlt_property self, locale_t locale )
 
 		temp = strtod( self->prop_string, &p );
 
-#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32)
+#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 		if ( locale ) {
 			// Restore the current locale
 			setlocale( LC_NUMERIC, orig_localename );
@@ -1537,15 +1535,15 @@ mlt_rect mlt_property_get_rect( mlt_property self, locale_t locale )
 		char *p = NULL;
 		int count = 0;
 
-#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32)
+#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 		char *orig_localename = NULL;
 		if ( locale ) {
 			// Protect damaging the global locale from a temporary locale on another thread.
 			pthread_mutex_lock( &self->mutex );
-			
+
 			// Get the current locale
 			orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
-			
+
 			// Set the new locale
 			setlocale( LC_NUMERIC, locale );
 		}
@@ -1554,7 +1552,7 @@ mlt_rect mlt_property_get_rect( mlt_property self, locale_t locale )
 		while ( *value )
 		{
 			double temp;
-#if defined(__GLIBC__) || defined(__APPLE__)
+#if defined(__GLIBC__) || defined(__APPLE__) || HAVE_STRTOD_L
 			if ( locale )
 				temp = strtod_l( value, &p, locale );
             else
@@ -1589,7 +1587,7 @@ mlt_rect mlt_property_get_rect( mlt_property self, locale_t locale )
 			count ++;
 		}
 
-#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32)
+#if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 		if ( locale ) {
 			// Restore the current locale
 			setlocale( LC_NUMERIC, orig_localename );

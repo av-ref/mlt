@@ -82,7 +82,7 @@ static int f0r_update2_slice( int id, int index, int count, void *context )
 	return 0;
 }
 
-int process_frei0r_item( mlt_service service, double position, double time, mlt_properties prop, mlt_frame this, uint8_t **image, int *width, int *height )
+int process_frei0r_item( mlt_service service, double position, double time, mlt_properties prop, mlt_frame frame, uint8_t **image, int *width, int *height )
 {
 	int i=0;
 	f0r_instance_t ( *f0r_construct ) ( unsigned int , unsigned int ) = mlt_properties_get_data(  prop , "f0r_construct" ,NULL);
@@ -91,7 +91,6 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 		return -1;
 	}
 	void (*f0r_update)(f0r_instance_t instance, double time, const uint32_t* inframe, uint32_t* outframe)=mlt_properties_get_data(  prop , "f0r_update" ,NULL);
-	void (*f0r_destruct)(f0r_instance_t instance)=mlt_properties_get_data(  prop , "f0r_destruct" ,NULL);
 	void (*f0r_get_plugin_info)(f0r_plugin_info_t*)=mlt_properties_get_data( prop, "f0r_get_plugin_info" ,NULL);
 	void (*f0r_get_param_info)(f0r_param_info_t* info, int param_index)=mlt_properties_get_data( prop ,  "f0r_get_param_info" ,NULL);
 	void (*f0r_set_param_value)(f0r_instance_t instance, f0r_param_t param, int param_index)=mlt_properties_get_data(  prop , "f0r_set_param_value" ,NULL);
@@ -115,7 +114,7 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 	f0r_instance_t inst = mlt_properties_get_data(prop, ctorname, NULL);
 	if (!inst) {
 		inst = f0r_construct(*width, slice_height);
-		mlt_properties_set_data(prop, ctorname, inst, 0, f0r_destruct , NULL);
+		mlt_properties_set_data(prop, ctorname, inst, 0, NULL, NULL);
 	}
 
 	if ( !not_thread_safe )
@@ -249,7 +248,7 @@ int process_frei0r_item( mlt_service service, double position, double time, mlt_
 		rgba_bgra((uint8_t*) dest, (uint8_t*) result, *width, *height);
 	}
 	*image = (uint8_t*) result;
-	mlt_frame_set_image(this, (uint8_t*) result, video_area * sizeof(uint32_t), mlt_pool_release);
+	mlt_frame_set_image(frame, (uint8_t*) result, video_area * sizeof(uint32_t), mlt_pool_release);
 	if (extra)
 		mlt_pool_release(extra);
 

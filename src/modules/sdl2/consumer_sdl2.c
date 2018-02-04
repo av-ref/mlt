@@ -1,6 +1,6 @@
 /*
  * consumer_sdl.c -- A Simple DirectMedia Layer consumer
- * Copyright (C) 2003-2018 Meltytech, LLC
+ * Copyright (C) 2017-2018 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,9 +28,9 @@
 #include <string.h>
 #include <pthread.h>
 #include <SDL.h>
-#include <SDL_syswm.h>
 #include <sys/time.h>
-#include "consumer_sdl_osx.h"
+
+#undef MLT_IMAGE_FORMAT // only yuv422 working currently
 
 extern pthread_mutex_t mlt_sdl_mutex;
 
@@ -60,11 +60,11 @@ struct consumer_sdl_s
 	int width;
 	int height;
 	int playing;
-	int sdl_flags;
-	SDL_Overlay *sdl_overlay;
-	SDL_Rect rect;
+	SDL_Window *sdl_window;
+	SDL_Renderer *sdl_renderer;
+	SDL_Texture *sdl_texture;
+	SDL_Rect sdl_rect;
 	uint8_t *buffer;
-	int bpp;
 	int is_purge;
 };
 
@@ -77,14 +77,14 @@ static int consumer_is_stopped( mlt_consumer parent );
 static void consumer_purge( mlt_consumer parent );
 static void consumer_close( mlt_consumer parent );
 static void *consumer_thread( void * );
-static int consumer_get_dimensions( int *width, int *height );
 static void consumer_sdl_event( mlt_listener listener, mlt_properties owner, mlt_service self, void **args );
+static int setup_sdl_video( consumer_sdl self );
 
 /** This is what will be called by the factory - anything can be passed in
 	via the argument, but keep it simple.
 */
 
-mlt_consumer consumer_sdl_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg )
+mlt_consumer consumer_sdl2_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg )
 {
 	// Create the consumer object
 	consumer_sdl self = calloc( 1, sizeof( struct consumer_sdl_s ) );
@@ -124,6 +124,9 @@ mlt_consumer consumer_sdl_init( mlt_profile profile, mlt_service_type type, cons
 
 		// Default audio buffer
 		mlt_properties_set_int( self->properties, "audio_buffer", 2048 );
+#if defined(_WIN32) && SDL_MAJOR_VERSION == 2
+		mlt_properties_set( self->properties, "audio_driver", "DirectSound" );
+#endif
 
 		// Ensure we don't join on a non-running object
 		self->joined = 1;
@@ -131,7 +134,7 @@ mlt_consumer consumer_sdl_init( mlt_profile profile, mlt_service_type type, cons
 		// process actual param
 		if ( arg && sscanf( arg, "%dx%d", &self->width, &self->height ) )
 		{
-			mlt_properties_set_int( self->properties, "_arg_size", 1 );
+			mlt_properties_set_int( self->properties, "resolution", 1 );
 		}
 		else
 		{
@@ -139,11 +142,6 @@ mlt_consumer consumer_sdl_init( mlt_profile profile, mlt_service_type type, cons
 			self->height = mlt_properties_get_int( self->properties, "height" );
 		}
 	
-		// Set the sdl flags
-		self->sdl_flags = SDL_HWSURFACE | SDL_ASYNCBLIT | SDL_HWACCEL | SDL_DOUBLEBUF;
-#if !defined(__APPLE__)
-		self->sdl_flags |= SDL_RESIZABLE;
-#endif		
 		// Allow thread to be started/stopped
 		parent->start = consumer_start;
 		parent->stop = consumer_stop;
@@ -177,11 +175,7 @@ int consumer_start( mlt_consumer parent )
 	if ( !self->running )
 	{
 		mlt_properties properties = MLT_CONSUMER_PROPERTIES( parent );
-		int video_off = mlt_properties_get_int( properties, "video_off" );
-		int preview_off = mlt_properties_get_int( properties, "preview_off" );
-		int display_off = video_off | preview_off;
 		int audio_off = mlt_properties_get_int( properties, "audio_off" );
-		int sdl_started = mlt_properties_get_int( properties, "sdl_started" );
 		char *output_display = mlt_properties_get( properties, "output_display" );
 		char *window_id = mlt_properties_get( properties, "window_id" );
 		char *audio_driver = mlt_properties_get( properties, "audio_driver" );
@@ -208,7 +202,7 @@ int consumer_start( mlt_consumer parent )
 		if ( audio_device != NULL )
 			setenv( "AUDIODEV", audio_device, 1 );
 
-		if ( ! mlt_properties_get_int( self->properties, "_arg_size" ) )
+		if ( ! mlt_properties_get_int( self->properties, "resolution" ) )
 		{
 			if ( mlt_properties_get_int( self->properties, "width" ) > 0 )
 				self->width = mlt_properties_get_int( self->properties, "width" );
@@ -216,28 +210,11 @@ int consumer_start( mlt_consumer parent )
 				self->height = mlt_properties_get_int( self->properties, "height" );
 		}
 
-		self->bpp = mlt_properties_get_int( self->properties, "bpp" );
-
-		if ( sdl_started == 0 && display_off == 0 )
-		{
-			pthread_mutex_lock( &mlt_sdl_mutex );
-			int ret = SDL_Init( SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE );
-			pthread_mutex_unlock( &mlt_sdl_mutex );
-			if ( ret < 0 )
-			{
-				mlt_log_error( MLT_CONSUMER_SERVICE(parent), "Failed to initialize SDL: %s\n", SDL_GetError() );
-				return -1;
-			}
-
-			SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL );
-			SDL_EnableUNICODE( 1 );
-		}
-
 		if ( audio_off == 0 )
 			SDL_InitSubSystem( SDL_INIT_AUDIO );
 
 		// Default window size
-		if ( mlt_properties_get_int( self->properties, "_arg_size" ) )
+		if ( mlt_properties_get_int( self->properties, "resolution" ) )
 		{
 			self->window_width = self->width;
 			self->window_height = self->height;
@@ -249,21 +226,11 @@ int consumer_start( mlt_consumer parent )
 			self->window_height = self->height;
 		}
 
-		pthread_mutex_lock( &mlt_sdl_mutex );
-		if ( !SDL_GetVideoSurface() && display_off == 0 )
-		{
-			if ( mlt_properties_get_int( self->properties, "fullscreen" ) )
-			{
-				const SDL_VideoInfo *vi;
-				vi = SDL_GetVideoInfo();
-				self->window_width = vi->current_w;
-				self->window_height = vi->current_h;
-				self->sdl_flags |= SDL_FULLSCREEN;
-				SDL_ShowCursor( SDL_DISABLE );
-			}
-			SDL_SetVideoMode( self->window_width, self->window_height, 0, self->sdl_flags );
-		}
-		pthread_mutex_unlock( &mlt_sdl_mutex );
+#if defined(__APPLE__) || defined(_WIN32)
+		// Initialize SDL video if needed.
+		if ( setup_sdl_video(self) )
+			return 1;
+#endif
 
 		pthread_create( &self->thread, NULL, consumer_thread, self );
 	}
@@ -296,9 +263,15 @@ int consumer_stop( mlt_consumer parent )
 
 		// cleanup SDL
 		pthread_mutex_lock( &mlt_sdl_mutex );
-		if ( self->sdl_overlay != NULL )
-			SDL_FreeYUVOverlay( self->sdl_overlay );
-		self->sdl_overlay = NULL;
+		if ( self->sdl_texture )
+			SDL_DestroyTexture( self->sdl_texture );
+		self->sdl_texture = NULL;
+		if ( self->sdl_renderer )
+			SDL_DestroyRenderer( self->sdl_renderer );
+		self->sdl_renderer = NULL;
+		if ( self->sdl_window )
+			SDL_DestroyWindow( self->sdl_window );
+		self->sdl_window = NULL;
 		if ( !mlt_properties_get_int( MLT_CONSUMER_PROPERTIES( parent ), "audio_off" ) )
 			SDL_QuitSubSystem( SDL_INIT_AUDIO );
 		if ( mlt_properties_get_int( MLT_CONSUMER_PROPERTIES( parent ), "sdl_started" ) == 0 )
@@ -329,30 +302,15 @@ void consumer_purge( mlt_consumer parent )
 	}
 }
 
-static int sdl_lock_display( )
-{
-	pthread_mutex_lock( &mlt_sdl_mutex );
-	SDL_Surface *screen = SDL_GetVideoSurface( );
-	int result = screen != NULL && ( !SDL_MUSTLOCK( screen ) || SDL_LockSurface( screen ) >= 0 );
-	pthread_mutex_unlock( &mlt_sdl_mutex );
-	return result;
-}
-
-static void sdl_unlock_display( )
-{
-	pthread_mutex_lock( &mlt_sdl_mutex );
-	SDL_Surface *screen = SDL_GetVideoSurface( );
-	if ( screen != NULL && SDL_MUSTLOCK( screen ) )
-		SDL_UnlockSurface( screen );
-	pthread_mutex_unlock( &mlt_sdl_mutex );
-}
-
 static void sdl_fill_audio( void *udata, uint8_t *stream, int len )
 {
 	consumer_sdl self = udata;
 
 	// Get the volume
 	double volume = mlt_properties_get_double( self->properties, "volume" );
+
+	// Wipe the stream first
+	memset( stream, 0, len );
 
 	pthread_mutex_lock( &self->audio_mutex );
 
@@ -376,9 +334,6 @@ static void sdl_fill_audio( void *udata, uint8_t *stream, int len )
 	}
 	else
 	{
-		// Just to be safe, wipe the stream first
-		memset( stream, 0, len );
-
 		// Mix the audio 
 		SDL_MixAudio( stream, self->audio_buffer, len, ( int )( ( float )SDL_MIX_MAXVOLUME * volume ) );
 
@@ -495,103 +450,118 @@ static int consumer_play_audio( consumer_sdl self, mlt_frame frame, int init_aud
 	return init_audio;
 }
 
+static int setup_sdl_video( consumer_sdl self )
+{
+	int error = 0;
+	int sdl_flags = SDL_WINDOW_RESIZABLE;
+	int texture_format = SDL_PIXELFORMAT_YUY2;
+
+	// Skip this if video is disabled.
+	int video_off = mlt_properties_get_int( self->properties, "video_off" );
+	int preview_off = mlt_properties_get_int( self->properties, "preview_off" );
+	if ( video_off || preview_off )
+		return error;
+
+	if (!SDL_WasInit(SDL_INIT_VIDEO))
+	{
+		pthread_mutex_lock( &mlt_sdl_mutex );
+		int ret = SDL_Init( SDL_INIT_VIDEO );
+		pthread_mutex_unlock( &mlt_sdl_mutex );
+		if ( ret < 0 )
+		{
+			mlt_log_error( MLT_CONSUMER_SERVICE(&self->parent), "Failed to initialize SDL: %s\n", SDL_GetError() );
+			return -1;
+		}
+	}
+
+#ifdef MLT_IMAGE_FORMAT
+	int image_format = mlt_properties_get_int( self->properties, "mlt_image_format" );
+
+	if ( image_format ) switch ( image_format ) {
+	case mlt_image_rgb24:
+		texture_format = SDL_PIXELFORMAT_RGB24;
+		break;
+	case mlt_image_rgb24a:
+		texture_format = SDL_PIXELFORMAT_ABGR8888;
+		break;
+	case mlt_image_yuv420p:
+		texture_format = SDL_PIXELFORMAT_IYUV;
+		break;
+	case mlt_image_yuv422:
+		texture_format = SDL_PIXELFORMAT_YUY2;
+		break;
+	default:
+		mlt_log_error( MLT_CONSUMER_SERVICE(&self->parent), "Invalid image format %s\n",
+			mlt_image_format_name( image_format ) );
+		return -1;
+	}
+#endif
+
+	if ( mlt_properties_get_int( self->properties, "fullscreen" ) )
+	{
+		self->window_width = self->width;
+		self->window_height = self->height;
+		sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		SDL_ShowCursor( SDL_DISABLE );
+	}
+
+	pthread_mutex_lock( &mlt_sdl_mutex );
+	self->sdl_window = SDL_CreateWindow("MLT", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		self->window_width, self->window_height, sdl_flags);
+	self->sdl_renderer = SDL_CreateRenderer(self->sdl_window, -1, SDL_RENDERER_ACCELERATED);
+	if ( self->sdl_renderer )
+	{
+		// Get texture width and height from the profile.
+		int width = mlt_properties_get_int( self->properties, "width" );
+		int height = mlt_properties_get_int( self->properties, "height" );
+		self->sdl_texture = SDL_CreateTexture( self->sdl_renderer, texture_format,
+			SDL_TEXTUREACCESS_STREAMING, width, height );
+		if ( self->sdl_texture ) {
+			SDL_SetRenderDrawColor( self->sdl_renderer, 0, 0, 0, 255);
+		} else {
+			mlt_log_error( MLT_CONSUMER_SERVICE(&self->parent), "Failed to create SDL texture: %s\n", SDL_GetError() );
+			error = -1;
+		}
+	} else {
+		mlt_log_error( MLT_CONSUMER_SERVICE(&self->parent), "Failed to create SDL renderer: %s\n", SDL_GetError() );
+		error = -1;
+	}
+	pthread_mutex_unlock( &mlt_sdl_mutex );
+
+	return error;
+}
+
 static int consumer_play_video( consumer_sdl self, mlt_frame frame )
 {
 	// Get the properties of this consumer
 	mlt_properties properties = self->properties;
 
+#ifdef MLT_IMAGE_FORMAT
 	mlt_image_format vfmt = mlt_properties_get_int( properties, "mlt_image_format" );
+#else
+	mlt_image_format vfmt = mlt_image_yuv422;
+#endif
 	int width = self->width, height = self->height;
 	uint8_t *image;
-	int changed = 0;
 
 	int video_off = mlt_properties_get_int( properties, "video_off" );
 	int preview_off = mlt_properties_get_int( properties, "preview_off" );
-	mlt_image_format preview_format = mlt_properties_get_int( properties, "preview_format" );
 	int display_off = video_off | preview_off;
 
-	if ( self->running && display_off == 0 )
+	if ( self->running && !display_off )
 	{
 		// Get the image, width and height
 		mlt_frame_get_image( frame, &image, &vfmt, &width, &height, 0 );
-		
-		void *pool = mlt_cocoa_autorelease_init();
-
-		// Handle events
-		if ( SDL_GetVideoSurface() )
-		{
-			SDL_Event event;
-	
-			sdl_lock_display( );
-			pthread_mutex_lock( &mlt_sdl_mutex );
-			changed = consumer_get_dimensions( &self->window_width, &self->window_height );
-			pthread_mutex_unlock( &mlt_sdl_mutex );
-			sdl_unlock_display( );
-
-			while ( SDL_PollEvent( &event ) )
-			{
-				mlt_events_fire( self->properties, "consumer-sdl-event", &event, NULL );
-
-				switch( event.type )
-				{
-					case SDL_VIDEORESIZE:
-						self->window_width = event.resize.w;
-						self->window_height = event.resize.h;
-						changed = 1;
-						break;
-					case SDL_QUIT:
-						self->running = 0;
-						break;
-					case SDL_KEYDOWN:
-						{
-							mlt_producer producer = mlt_properties_get_data( properties, "transport_producer", NULL );
-							char keyboard[ 2 ] = " ";
-							void (*callback)( mlt_producer, char * ) = mlt_properties_get_data( properties, "transport_callback", NULL );
-							if ( callback != NULL && producer != NULL && event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0 )
-							{
-								keyboard[ 0 ] = ( char )event.key.keysym.unicode;
-								callback( producer, keyboard );
-							}
-						}
-						break;
-				}
-			}
-		}
-	
-		sdl_lock_display();
-
-		if ( width != self->width || height != self->height )
-		{
-			if ( self->sdl_overlay != NULL )
-				SDL_FreeYUVOverlay( self->sdl_overlay );
-			self->sdl_overlay = NULL;
-		}
-
-		if ( self->running && ( !SDL_GetVideoSurface() || changed ) )
-		{
-			// Force an overlay recreation
-			if ( self->sdl_overlay != NULL )
-				SDL_FreeYUVOverlay( self->sdl_overlay );
-			self->sdl_overlay = NULL;
-
-			// open SDL window with video overlay, if possible
-			pthread_mutex_lock( &mlt_sdl_mutex );
-			SDL_Surface *screen = SDL_SetVideoMode( self->window_width, self->window_height, self->bpp, self->sdl_flags );
-			if ( consumer_get_dimensions( &self->window_width, &self->window_height ) )
-				screen = SDL_SetVideoMode( self->window_width, self->window_height, self->bpp, self->sdl_flags );
-			pthread_mutex_unlock( &mlt_sdl_mutex );
-
-			if ( screen )
-			{
-				uint32_t color = mlt_properties_get_int( self->properties, "window_background" );
-				SDL_FillRect( screen, NULL, color >> 8 );
-				SDL_Flip( screen );
-			}
-		}
 
 		if ( self->running )
 		{
 			// Determine window's new display aspect ratio
+			int x = mlt_properties_get_int( properties, "window_width" );
+			if ( x && x != self->window_width )
+				self->window_width = x;
+			x = mlt_properties_get_int( properties, "window_height" );
+			if ( x && x != self->window_height )
+				self->window_height = x;
 			double this_aspect = ( double )self->window_width / self->window_height;
 
 			// Get the display aspect ratio
@@ -609,77 +579,73 @@ static int consumer_play_video( consumer_sdl self, mlt_frame frame )
 				!strcmp( mlt_properties_get( properties, "rescale" ), "none" ) )
 			{
 				// Use hardware scaler to normalise display aspect ratio
-				self->rect.w = frame_aspect / this_aspect * self->window_width;
-				self->rect.h = self->window_height;
-				if ( self->rect.w > self->window_width )
+				self->sdl_rect.w = frame_aspect / this_aspect * self->window_width;
+				self->sdl_rect.h = self->window_height;
+				if ( self->sdl_rect.w > self->window_width )
 				{
-					self->rect.w = self->window_width;
-					self->rect.h = this_aspect / frame_aspect * self->window_height;
+					self->sdl_rect.w = self->window_width;
+					self->sdl_rect.h = this_aspect / frame_aspect * self->window_height;
 				}
 			}
 			// Special case optimisation to negate odd effect of sample aspect ratio
 			// not corresponding exactly with image resolution.
 			else if ( (int)( this_aspect * 1000 ) == (int)( display_ratio * 1000 ) ) 
 			{
-				self->rect.w = self->window_width;
-				self->rect.h = self->window_height;
+				self->sdl_rect.w = self->window_width;
+				self->sdl_rect.h = self->window_height;
 			}
 			// Use hardware scaler to normalise sample aspect ratio
 			else if ( self->window_height * display_ratio > self->window_width )
 			{
-				self->rect.w = self->window_width;
-				self->rect.h = self->window_width / display_ratio;
+				self->sdl_rect.w = self->window_width;
+				self->sdl_rect.h = self->window_width / display_ratio;
 			}
 			else
 			{
-				self->rect.w = self->window_height * display_ratio;
-				self->rect.h = self->window_height;
+				self->sdl_rect.w = self->window_height * display_ratio;
+				self->sdl_rect.h = self->window_height;
 			}
 			
-			self->rect.x = ( self->window_width - self->rect.w ) / 2;
-			self->rect.y = ( self->window_height - self->rect.h ) / 2;
-			self->rect.x -= self->rect.x % 2;
+			self->sdl_rect.x = ( self->window_width - self->sdl_rect.w ) / 2;
+			self->sdl_rect.y = ( self->window_height - self->sdl_rect.h ) / 2;
+			self->sdl_rect.x -= self->sdl_rect.x % 2;
 
-			mlt_properties_set_int( self->properties, "rect_x", self->rect.x );
-			mlt_properties_set_int( self->properties, "rect_y", self->rect.y );
-			mlt_properties_set_int( self->properties, "rect_w", self->rect.w );
-			mlt_properties_set_int( self->properties, "rect_h", self->rect.h );
-
-			SDL_SetClipRect( SDL_GetVideoSurface(), &self->rect );
+			mlt_properties_set_int( self->properties, "rect_x", self->sdl_rect.x );
+			mlt_properties_set_int( self->properties, "rect_y", self->sdl_rect.y );
+			mlt_properties_set_int( self->properties, "rect_w", self->sdl_rect.w );
+			mlt_properties_set_int( self->properties, "rect_h", self->sdl_rect.h );
 		}
 
-		if ( self->running && SDL_GetVideoSurface() && self->sdl_overlay == NULL )
+		if ( self->running && image )
 		{
-			SDL_SetClipRect( SDL_GetVideoSurface(), &self->rect );
-			self->sdl_overlay = SDL_CreateYUVOverlay( width, height,
-				( vfmt == mlt_image_yuv422 ? SDL_YUY2_OVERLAY : SDL_IYUV_OVERLAY ),
-				SDL_GetVideoSurface() );
-		}
+			unsigned char* planes[4];
+			int strides[4];
 
-		if ( self->running && SDL_GetVideoSurface() && self->sdl_overlay != NULL )
-		{
-			self->buffer = self->sdl_overlay->pixels[ 0 ];
-			if ( SDL_LockYUVOverlay( self->sdl_overlay ) >= 0 )
-			{
-				// We use height-1 because mlt_image_format_size() uses height + 1.
-				// XXX Remove -1 when mlt_image_format_size() is changed.
-				int size = mlt_image_format_size( vfmt, width, height - 1, NULL );
-				if ( image != NULL )
-					memcpy( self->buffer, image, size );
-				SDL_UnlockYUVOverlay( self->sdl_overlay );
-				SDL_DisplayYUVOverlay( self->sdl_overlay, &SDL_GetVideoSurface()->clip_rect );
+			// We use height-1 because mlt_image_format_size() uses height + 1.
+			// XXX Remove -1 when mlt_image_format_size() is changed.
+			mlt_image_format_planes( vfmt, width, height - 1, image, planes, strides );
+			if ( strides[1] ) {
+				SDL_UpdateYUVTexture( self->sdl_texture, NULL,
+					planes[0], strides[0],
+					planes[1], strides[1],
+					planes[2], strides[2] );
+			} else {
+				SDL_UpdateTexture( self->sdl_texture, NULL, planes[0], strides[0] );
 			}
+			SDL_RenderClear( self->sdl_renderer );
+			SDL_RenderCopy( self->sdl_renderer, self->sdl_texture, NULL, &self->sdl_rect );
+			SDL_RenderPresent( self->sdl_renderer );
 		}
 
-		sdl_unlock_display();
-		mlt_cocoa_autorelease_close( pool );
 		mlt_events_fire( properties, "consumer-frame-show", frame, NULL );
 	}
 	else if ( self->running )
 	{
-		vfmt = preview_format == mlt_image_none ? mlt_image_rgb24a : preview_format;
-		if ( !video_off )
+		if ( !video_off ) {
+			mlt_image_format preview_format = mlt_properties_get_int( properties, "preview_format" );
+			vfmt = preview_format == mlt_image_none ? mlt_image_rgb24a : preview_format;
 			mlt_frame_get_image( frame, &image, &vfmt, &width, &height, 0 );
+		}
 		mlt_events_fire( properties, "consumer-frame-show", frame, NULL );
 	}
 
@@ -703,10 +669,13 @@ static void *video_thread( void *arg )
 	// Get real time flag
 	int real_time = mlt_properties_get_int( self->properties, "real_time" );
 
-	// Get the current time
-	gettimeofday( &now, NULL );
+#if !defined(__APPLE__) && !defined(_WIN32)
+	if ( setup_sdl_video(self) )
+		self->running = 0;
+#endif
 
 	// Determine start time
+	gettimeofday( &now, NULL );
 	start = ( int64_t )now.tv_sec * 1000000 + now.tv_usec;
 
 	while ( self->running )
@@ -781,9 +750,6 @@ static void *video_thread( void *arg )
 
 	return NULL;
 }
-
-/** Threaded wrapper for pipe.
-*/
 
 static void *consumer_thread( void *arg )
 {
@@ -895,57 +861,6 @@ static void *consumer_thread( void *arg )
 
 	return NULL;
 }
-
-static int consumer_get_dimensions( int *width, int *height )
-{
-	int changed = 0;
-
-	// SDL windows manager structure
-	SDL_SysWMinfo wm;
-
-	// Specify the SDL Version
-	SDL_VERSION( &wm.version );
-
-	// Lock the display
-	//sdl_lock_display();
-
-#ifndef __APPLE__
-	// Get the wm structure
-	if ( SDL_GetWMInfo( &wm ) == 1 )
-	{
-#ifndef _WIN32
-		// Check that we have the X11 wm
-		if ( wm.subsystem == SDL_SYSWM_X11 ) 
-		{
-			// Get the SDL window
-			Window window = wm.info.x11.window;
-
-			// Get the display session
-			Display *display = wm.info.x11.display;
-
-			// Get the window attributes
-			XWindowAttributes attr;
-			XGetWindowAttributes( display, window, &attr );
-
-			// Determine whether window has changed
-			changed = *width != attr.width || *height != attr.height;
-
-			// Return width and height
-			*width = attr.width;
-			*height = attr.height;
-		}
-#endif
-	}
-#endif
-
-	// Unlock the display
-	//sdl_unlock_display();
-
-	return changed;
-}
-
-/** Callback to allow override of the close method.
-*/
 
 static void consumer_close( mlt_consumer parent )
 {

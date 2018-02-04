@@ -38,6 +38,9 @@ else
 	then
 		qt_includedir="$QTDIR/include"
 		qt_libdir="$QTDIR/lib"
+		qt_version=$($QTDIR/bin/qmake -query QT_VERSION)
+	else
+		qt_version=$(qmake -query QT_VERSION)
 	fi
 
 	export without_kde=
@@ -57,6 +60,11 @@ else
 	done
 
 	echo > config.mak
+
+	if $(echo $qt_version | awk '{if ($0 + 0 > 5.6) exit 0; else exit 1;}')
+	then
+		echo "USE_CPP11=1" >> config.mak
+	fi
 
 	pkg-config --exists 'libexif'
 	if [ $? -eq 0 ]

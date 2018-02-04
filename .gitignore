@@ -36,3 +36,6 @@ build/*
 *.project
 /.cproject
 /CMakeLists.txt.user
+*.dot
+*.rej
+

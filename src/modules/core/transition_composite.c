@@ -1,6 +1,6 @@
 /*
  * transition_composite.c -- compose one image over another using alpha channel
- * Copyright (C) 2003-2015 Meltytech, LLC
+ * Copyright (C) 2003-2017 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -703,7 +703,7 @@ static uint16_t* get_luma( mlt_transition self, mlt_properties properties, int w
 		// TODO: Clean up quick and dirty compressed/existence check
 		FILE *test;
 		sprintf( temp, "%s/lumas/%s/%s", mlt_environment( "MLT_DATA" ), mlt_environment( "MLT_NORMALISATION" ), strchr( resource, '%' ) + 1 );
-		test = fopen( temp, "r" );
+		test = mlt_fopen( temp, "r" );
 		if ( test == NULL )
 			strcat( temp, ".png" );
 		else
@@ -747,12 +747,8 @@ static uint16_t* get_luma( mlt_transition self, mlt_properties properties, int w
 			// See if it is a PGM
 			if ( extension != NULL && strcmp( extension, ".pgm" ) == 0 )
 			{
-				// Convert file name string encoding.
-				mlt_properties_set( properties, "_luma_utf8", resource );
-				mlt_properties_from_utf8( properties, "_luma_utf8", "_luma_local8" );
-
 				// Open PGM
-				FILE *f = fopen( mlt_properties_get( properties, "_luma_local8" ), "rb" );
+				FILE *f = mlt_fopen( resource, "rb" );
 				if ( f != NULL )
 				{
 					// Load from PGM
@@ -1032,7 +1028,7 @@ static mlt_geometry composite_calculate( mlt_transition self, struct geometry_s 
 	char *name = mlt_properties_get( properties, "_unique_id" );
 	char key[ 256 ];
 
-	sprintf( key, "%s.in", name );
+	snprintf( key, sizeof(key), "composite %s.in", name );
 	if ( mlt_properties_get( a_props, key ) )
 	{
 		sscanf( mlt_properties_get( a_props, key ), "%f %f %f %f %f %d %d", &result->item.x, &result->item.y, &result->item.w, &result->item.h, &result->item.mix, &result->nw, &result->nh );
@@ -1139,9 +1135,9 @@ mlt_frame composite_copy_region( mlt_transition self, mlt_frame a_frame, mlt_pos
 	}
 
 	// Store the key
-	sprintf( key, "%s.in=%d %d %d %d %f %d %d", name, x, y, w, h, result.item.mix, width, height );
+	snprintf( key, sizeof(key), "composite %s.in=%d %d %d %d %f %d %d", name, x, y, w, h, result.item.mix, width, height );
 	mlt_properties_parse( a_props, key );
-	sprintf( key, "%s.out=%d %d %d %d %f %d %d", name, x, y, w, h, result.item.mix, width, height );
+	snprintf( key, sizeof(key), "composite %s.out=%d %d %d %d %f %d %d", name, x, y, w, h, result.item.mix, width, height );
 	mlt_properties_parse( a_props, key );
 
 	ds = w * 2;

@@ -3,7 +3,7 @@
  * \brief interface for all frame classes
  * \see mlt_frame_s
  *
- * Copyright (C) 2003-2014 Meltytech, LLC
+ * Copyright (C) 2003-2017 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -566,10 +566,13 @@ static int generate_test_image( mlt_properties properties, uint8_t **buffer,  ml
 				{
 					int strides[4];
 					uint8_t* planes[4];
+					int h = *height;
 					mlt_image_format_planes( *format, *width, *height, *buffer, planes, strides );
-					memset(planes[0], 235, *height * strides[0]);
-					memset(planes[1], 128, *height * strides[1]);
-					memset(planes[2], 128, *height * strides[2]);
+					memset(planes[0], 235, h * strides[0]);
+					if ( *format == mlt_image_yuv420p )
+						h /= 2;
+					memset(planes[1], 128, h * strides[1]);
+					memset(planes[2], 128, h * strides[2]);
 				}
 				break;
 			default:
@@ -1040,7 +1043,7 @@ void mlt_frame_write_ppm( mlt_frame frame )
 		char filename[16];
 		
 		sprintf( filename, "frame-%05d.ppm", (int)mlt_frame_get_position( frame ) );
-		file = fopen( filename, "wb" );
+		file = mlt_fopen( filename, "wb" );
 		if ( !file )
 			return;
 		fprintf( file, "P6\n%d %d\n255\n", width, height);
