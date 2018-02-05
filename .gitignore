@@ -39,3 +39,4 @@ build/*
 *.dot
 *.rej
 
+/cmake-build-debug/

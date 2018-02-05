@@ -7,7 +7,7 @@ set(SRCS
         filter_avcolour_space.c
         filter_avdeinterlace.c
         filter_avfilter.c
-        filter_avresample.c
+        #filter_avresample.c
         filter_swscale.c
         producer_avformat.c
         consumer_avformat.c

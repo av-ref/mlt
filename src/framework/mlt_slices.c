@@ -26,8 +26,8 @@
 #include "mlt_factory.h"
 
 #include <stdlib.h>
-#include <windows.h>
 #include <pthread.h>
+#include <unistd.h>
 #include <sched.h>
 #ifdef _WIN32
 #ifdef _WIN32_WINNT

@@ -46,6 +46,7 @@ void MltController::init ()
     dir.cdUp();
     dir.cd("lib");
     dir.cd("mlt");
+    dir.cd("plugins");
     QDir data(QApplication::applicationDirPath());
     data.cdUp();
     data.cd("share");

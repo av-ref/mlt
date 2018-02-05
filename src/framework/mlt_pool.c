@@ -68,9 +68,12 @@ typedef struct mlt_pool_s
  * optimized libraries (sse/altivec).
  */
 
-
-//typedef struct __attribute__ ((aligned (16))) mlt_release_s
+//
+#if defined(_WIN32)
 typedef struct __declspec(align(16)) mlt_release_s
+#else
+typedef struct __attribute__ ((aligned (16))) mlt_release_s
+#endif
 {
 	mlt_pool pool;
 	int references;

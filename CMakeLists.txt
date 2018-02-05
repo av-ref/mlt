@@ -64,7 +64,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) #add_library(STATIC)
 # Windows DLLs are "runtime" for CMake. Output them to "bin" like the Visual Studio projects do.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) #add_library(SHARED)
 set(MLT_META_DATA_DIRECTORY ${CMAKE_BINARY_DIR}/share/mlt)
-set(MLT_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mlt)
+set(MLT_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mlt/plugins)
 
 
 #################################################################################

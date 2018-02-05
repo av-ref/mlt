@@ -40,9 +40,11 @@
 #endif
 
 #include <cmath>
+#ifdef _WIN32
 #include <Windows.h>
-//#include <unistd.h>
-
+#else
+#include <unistd.h>
+#endif
 extern "C" {
 
 #include <framework/mlt_pool.h>

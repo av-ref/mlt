@@ -2675,7 +2675,7 @@ static int producer_get_audio( mlt_frame frame, void **buffer, mlt_audio_format 
 						pthread_mutex_unlock( &self->packets_mutex );
 						goto exit_get_audio;
 					}
-                    if ( !self->seekable && mlt_properties_get_int( properties, "exit_on_disconnect" ,"") )
+                    if ( !self->seekable && mlt_properties_get_int( properties, "exit_on_disconnect") )
 					{
                         mlt_log_fatal( MLT_PRODUCER_SERVICE(producer),
                                        "Exiting with error due to disconnected source.\n","" );

@@ -127,6 +127,7 @@ static char* mlt_dirname( char *path )
  * \return the repository
  */
 
+#define MAX_PATH 256
 char *dirname(char *path)
 {
     static char name[MAX_PATH];

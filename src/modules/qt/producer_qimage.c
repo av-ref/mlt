@@ -33,11 +33,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-//#ifdef MSVC
+#ifdef _WIN32
 #include <Windows.h>
-//#else
-//#include <unistd.h>
-//#endif
+#else
+#include <unistd.h>
+#endif
+
 #include <ctype.h>
 
 static void load_filenames( producer_qimage self, mlt_properties producer_properties );
