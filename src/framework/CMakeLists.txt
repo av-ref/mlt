@@ -52,11 +52,12 @@ mlt_slices.c
 
 set(HDRS
     mlt.h
+    mlt_types.h
+    mlt_defines.h
         mlt_consumer.h
 mlt_version.h
 mlt_factory.h
 mlt_filter.h
-mlt.h
 mlt_multitrack.h
 mlt_pool.h
 mlt_properties.h
@@ -64,7 +65,6 @@ mlt_events.h
 mlt_parser.h
 mlt_repository.h
 mlt_tractor.h
-mlt_types.h
 mlt_deque.h
 mlt_field.h
 mlt_frame.h
@@ -94,7 +94,7 @@ if(WIN32)
     #LDFLAGS += -liconv
 endif(WIN32)
 
-add_library(mlt SHARED ${SRCS} )
+add_library(mlt SHARED ${SRCS} ${HDRS} )
 
 if(WIN32)
 #    target_include_directories(mlt PRIVATE ${PTHREAD_PATH}/include)

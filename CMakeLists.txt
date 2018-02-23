@@ -1,6 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.0.0)
 
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
@@ -17,43 +16,36 @@ if(WIN32)
     link_directories( ${ThirdPartyPath}/lib )
     INCLUDE_DIRECTORIES(${ThirdPartyPath}/include)
 
-    set( WinFFmpegPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
+    set(WinFFmpegPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
     set(WinFFmpegCOMPONENTS avcodec avdevice avfilter avformat avutil swscale)
     foreach(comp ${WinFFmpegCOMPONENTS})
         set( _${comp}_INCLUDE_DIRS ${WinFFmpegPath}/include  )
         set( _${comp}_LIBRARY_DIRS ${WinFFmpegPath}/lib  )
     endforeach(comp)
+
+    add_definitions( -D _CRT_SECURE_NO_WARNINGS )
 endif()
 
 option(USE_QT "use qt module" ON)
 
 
-if(WIN32)
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Core
-    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt3Widgets
-    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Gui
-    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Test
-    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Svg
-    C:/Qt/Qt5.8.0-vc/5.8/msvc2015_64/lib/cmake/Qt5Xml
-    )
-else(WIN32)
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Core
-        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Widgets
-        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Gui
-        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Test
-        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Svg
-        /opt/Qt/Qt5.7.0-linux/5.7/gcc_64/lib/cmake/Qt5Xml
-        )
-endif(WIN32)
+#if(WIN32)
+#set(QT_DIR "C:/Qt/Qt5.9.3-mingw-vc/5.9.3/msvc2015_64")
+#else(WIN32)
+#endif(WIn32)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Test REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5Xml REQUIRED)
+#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+#    ${QT_DIR}/lib/cmake/Qt5Core
+#    ${QT_DIR}/lib/cmake/Qt5Widgets
+#    ${QT_DIR}/lib/cmake/Qt5Gui
+#    ${QT_DIR}/lib/cmake/Qt5Test
+#    ${QT_DIR}/lib/cmake/Qt5Svg
+#    ${QT_DIR}/lib/cmake/Qt5Xml
+#    )
+
+find_package(Qt5 COMPONENTS Core Gui Svg Xml Widgets Test REQUIRED)
+
+
 
 # Put the libaries and binaries that get built into directories at the
 # top of the build tree rather than in hard-to-find leaf

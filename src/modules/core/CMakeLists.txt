@@ -93,8 +93,9 @@ if(WIN32)
 endif(WIN32)
 
 add_library(mltcore MODULE ${SRCS})
+
 if(WIN32)
-    target_link_libraries(mltcore mlt pthread_dll)
+    target_link_libraries(mltcore  pthread_dll mlt)
     target_include_directories(mltcore PRIVATE ../../win32)
 else()
     target_link_libraries(mltcore mlt m pthread)

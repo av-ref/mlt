@@ -16,8 +16,11 @@ set(SRCS
 
 add_definitions( -DFILTERS -DCODECS -DAVDEVICE -DAVFILTER)
 
-
 include_directories(${FFmpeg_INCLUDE_DIRS})
+
+if(WIN32)
+    target_include_directories(mltcore PRIVATE ../../win32)
+endif()
 
 add_library(avformat MODULE ${SRCS} )
 
