@@ -3,7 +3,7 @@
  * \brief Property class definition
  * \see mlt_property_s
  *
- * Copyright (C) 2003-2017 Meltytech, LLC
+ * Copyright (C) 2003-2018 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -915,7 +915,9 @@ static void time_clock_from_frames( int frames, double fps, char *s )
 
 char *mlt_property_get_time( mlt_property self, mlt_time_format format, double fps, locale_t locale )
 {
+#if !defined(_WIN32)
 	char *orig_localename = NULL;
+#endif
 	int frames = 0;
 
 	// Remove existing string
@@ -1028,12 +1030,11 @@ static int is_property_numeric( mlt_property self, locale_t locale )
 	// If not already numeric but string is numeric.
 	if ( ( !result && self->types & mlt_prop_string ) && self->prop_string )
 	{
-		double temp;
 		char *p = NULL;
 
 #if defined(__GLIBC__) || defined(__APPLE__) || HAVE_STRTOD_L
 		if ( locale )
-			temp = strtod_l( self->prop_string, &p, locale );
+			strtod_l( self->prop_string, &p, locale );
 		else
 #elif !defined(_WIN32)
 		char *orig_localename = NULL;
@@ -1049,7 +1050,7 @@ static int is_property_numeric( mlt_property self, locale_t locale )
 		}
 #endif
 
-		temp = strtod( self->prop_string, &p );
+		strtod( self->prop_string, &p );
 
 #if !defined(__GLIBC__) && !defined(__APPLE__) && !defined(_WIN32) && !HAVE_STRTOD_L
 		if ( locale ) {
