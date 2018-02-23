@@ -28,6 +28,9 @@
 #include <string.h>
 #include <math.h>
 #include "transition_composite.h"
+#ifdef _WIN32
+#include <win32.h>
+#endif
 
 static inline int dissolve_yuv( mlt_frame frame, mlt_frame that, float weight, int width, int height )
 {

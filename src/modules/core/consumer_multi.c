@@ -23,6 +23,10 @@
 #include <pthread.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <win32.h>
+#endif
+
 // Forward references
 static int start( mlt_consumer consumer );
 static int stop( mlt_consumer consumer );

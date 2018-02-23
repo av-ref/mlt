@@ -27,15 +27,19 @@
 
 #include <stdlib.h>
 #include <pthread.h>
-#include <unistd.h>
+
 #include <sched.h>
 #ifdef _WIN32
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
 #endif
+
 #define _WIN32_WINNT 0x0601
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
+
 #define MAX_SLICES 32
 #define ENV_SLICES "MLT_SLICES_COUNT"
 

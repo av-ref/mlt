@@ -26,6 +26,11 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <win32.h>
+#endif
+
 typedef void ( *composite_line_fn )( uint8_t *dest, uint8_t *src, int width_src, uint8_t *alpha_b, uint8_t *alpha_a, int weight, uint16_t *luma, int softness, uint32_t step );
 
 /** Geometry struct.

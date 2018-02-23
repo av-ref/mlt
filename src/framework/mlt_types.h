@@ -194,21 +194,25 @@ typedef char *( *mlt_serialiser )( void *, int length );/**< pointer to serializ
 #define CLAMP(x, min, max) ((x) < (min) ? (min) : (x) > (max) ? (max) : (x))
 #endif
 
+
+#define mlt_fopen fopen
+
 #ifdef _WIN32
 #include <pthread.h>
 /* Win32 compatibility function declarations */
-extern int usleep(unsigned int useconds);
-#ifndef WIN_PTHREADS_TIME_H
-extern int nanosleep( const struct timespec * rqtp, struct timespec * rmtp );
+//extern int usleep(unsigned int useconds);
+//#ifndef WIN_PTHREADS_TIME_H
+//extern int nanosleep( const struct timespec * rqtp, struct timespec * rmtp );
+//#endif
+//extern int setenv(const char *name, const char *value, int overwrite);
+//extern char* getlocale();
+//extern FILE* win32_fopen(const char *filename_utf8, const char *mode_utf8);
+//#define mlt_fopen win32_fopen
+//#define MLT_DIRLIST_DELIMITER ";"
+//#else
+//#define mlt_fopen fopen
+//#define MLT_DIRLIST_DELIMITER ":"
+#else /* ifdef _WIN32 */
 #endif
-extern int setenv(const char *name, const char *value, int overwrite);
-extern char* getlocale();
-extern FILE* win32_fopen(const char *filename_utf8, const char *mode_utf8);
-#define mlt_fopen win32_fopen
-#define MLT_DIRLIST_DELIMITER ";"
-#else
-#define mlt_fopen fopen
-#define MLT_DIRLIST_DELIMITER ":"
-#endif /* ifdef _WIN32 */
 
 #endif

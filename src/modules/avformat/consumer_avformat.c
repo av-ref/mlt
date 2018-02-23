@@ -33,6 +33,7 @@
 #include <time.h>
 #ifdef _WIN32
 #include <Windows.h>
+#include <win32.h>
 #else
 #include <unistd.h>
 #endif

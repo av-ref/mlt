@@ -23,6 +23,10 @@
 
 #include <framework/mlt.h>
 
+#ifdef _WIN32
+#include "win32/win32.h"
+#endif
+
 #define MELT_FILE_MAX_LINES (100000)
 #define MELT_FILE_MAX_LENGTH (2048)
 

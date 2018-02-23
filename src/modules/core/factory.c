@@ -103,8 +103,8 @@ MLT_REPOSITORY
 	MLT_REGISTER( producer_type, "consumer", producer_consumer_init );
 	MLT_REGISTER( producer_type, "hold", producer_hold_init );
 	MLT_REGISTER( producer_type, "loader", producer_loader_init );
-	MLT_REGISTER( producer_type, "melt", producer_melt_init );
-	MLT_REGISTER( producer_type, "melt_file", producer_melt_file_init );
+    MLT_REGISTER( producer_type, "melt", producer_melt_init );
+    MLT_REGISTER( producer_type, "melt_file", producer_melt_file_init );
 	MLT_REGISTER( producer_type, "noise", producer_noise_init );
 	MLT_REGISTER( producer_type, "timewarp", producer_timewarp_init );
 	MLT_REGISTER( producer_type, "tone", producer_tone_init );

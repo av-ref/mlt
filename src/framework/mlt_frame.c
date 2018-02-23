@@ -30,6 +30,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include "win32/win32.h"
+#endif
+
 /** Construct a frame object.
  *
  * \public \memberof mlt_frame_s
