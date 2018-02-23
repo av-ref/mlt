@@ -30,13 +30,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-//#include <sys/time.h>
-//#include <time.h>
-#include "../win32/win_time.h"
 #include <time.h>
 
 #if defined(_WIN32)
+#include "../win32/win_time.h"
 #include <Winsock2.h>
+#else
+#include <sys/time.h>
+#include <time.h>
 #endif
 
 /** Define this if you want an automatic deinterlace (if necessary) when the

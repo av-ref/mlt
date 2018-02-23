@@ -24,7 +24,7 @@ add_definitions( -DGPL3 -DUSE_QT_OPENGL )
 
 add_library(mltqt MODULE ${CSRCS} ${CPPSRCS})
 if(WIN32)
-    target_link_libraries( mltqt pthread_dll mlt mlt++
+    target_link_libraries( mltqt pthread mlt mlt++
         Qt5::Widgets Qt5::Gui Qt5::Core Qt5::Svg Qt5::Xml)
 else()
     target_link_libraries(mltqt mlt mlt++ m pthread

@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "win32.h"
 #include <errno.h> 
 #include <time.h> 
 #include <windows.h>
@@ -28,6 +29,7 @@
 #include <locale.h>
 #include <ctype.h>
 #include <stdio.h>
+
 #include "../framework/mlt_properties.h"
 #include "../framework/mlt_log.h"
 

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef MLT_CONFIG_H
-#define MLT_CONFIG_H
+#ifndef MLT_DEFINES_H
+#define MLT_DEFINES_H
 
 #if defined(_WIN32)
     #ifdef MLT_EXPORTS

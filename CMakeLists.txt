@@ -10,41 +10,57 @@ set(CMAKE_MODULE_PATH
 
 project(mlt)
 
+
+# ffmpeg
+set(FFmpegPath       "E:/workspace_ffmpeg/3rd/ffmpeg")
 if(WIN32)
-    set(CMAKE_INSTALL_PREFIX "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
-    set(ThirdPartyPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
-    link_directories( ${ThirdPartyPath}/lib )
-    INCLUDE_DIRECTORIES(${ThirdPartyPath}/include)
+        set(WinFFmpegCOMPONENTS avcodec avdevice avfilter avformat avutil swscale)
+        foreach(comp ${WinFFmpegCOMPONENTS})
+            set( _${comp}_INCLUDE_DIRS ${FFmpegPath}/include  )
+            set( _${comp}_LIBRARY_DIRS ${FFmpegPath}/lib  )
+        endforeach(comp)
+endif(WIN32)
+#find_package(FFmpeg)
 
-    set(WinFFmpegPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
-    set(WinFFmpegCOMPONENTS avcodec avdevice avfilter avformat avutil swscale)
-    foreach(comp ${WinFFmpegCOMPONENTS})
-        set( _${comp}_INCLUDE_DIRS ${WinFFmpegPath}/include  )
-        set( _${comp}_LIBRARY_DIRS ${WinFFmpegPath}/lib  )
-    endforeach(comp)
+# pthread
+if(WIN32)
+        set(PthreadPath "E:/workspace_ffmpeg/3rd/phtread")
+        link_directories( ${PthreadPath}/lib )
+        INCLUDE_DIRECTORIES(${PthreadPath}/include)
+endif(WIN32)
 
+# dl
+if(WIN32)
+        set(DlPath "E:/workspace_ffmpeg/3rd/dl")
+        link_directories( ${DlPath}/lib )
+        INCLUDE_DIRECTORIES(${DlPath}/include)
+endif(WIN32)
+
+# dirent
+if(WIN32)
+        set(DirentPath "E:/workspace_ffmpeg/3rd/dirent")
+        INCLUDE_DIRECTORIES(${DirentPath}/include)
+endif(WIN32)
+
+
+if(WIN32)
+#    set(CMAKE_INSTALL_PREFIX "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
+#    set(ThirdPartyPath       "F:/github.cpp-repo/mlt_shotcut_ffmpeg/install-vc")
+#    link_directories( ${ThirdPartyPath}/lib )
+#    INCLUDE_DIRECTORIES(${ThirdPartyPath}/include)
     add_definitions( -D _CRT_SECURE_NO_WARNINGS )
 endif()
 
 option(USE_QT "use qt module" ON)
-
-
 #if(WIN32)
 #set(QT_DIR "C:/Qt/Qt5.9.3-mingw-vc/5.9.3/msvc2015_64")
 #else(WIN32)
 #endif(WIn32)
-
-#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-#    ${QT_DIR}/lib/cmake/Qt5Core
-#    ${QT_DIR}/lib/cmake/Qt5Widgets
-#    ${QT_DIR}/lib/cmake/Qt5Gui
-#    ${QT_DIR}/lib/cmake/Qt5Test
-#    ${QT_DIR}/lib/cmake/Qt5Svg
-#    ${QT_DIR}/lib/cmake/Qt5Xml
-#    )
-
-find_package(Qt5 COMPONENTS Core Gui Svg Xml Widgets Test REQUIRED)
-
+set(QtCOMPONENTS Core Gui Svg Xml Widgets Test)
+#foreach(comp ${QtCOMPONENTS})
+#    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}    ${QT_DIR}/lib/cmake/${comp}  )
+#endforeach(comp)
+find_package(Qt5 COMPONENTS ${QtCOMPONENTS} REQUIRED)
 
 
 # Put the libaries and binaries that get built into directories at the

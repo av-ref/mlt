@@ -33,7 +33,8 @@
 #include <time.h>
 #ifdef _WIN32
 #include <Windows.h>
-#include <win32.h>
+#include "win32.h"
+#include <direct.h>
 #else
 #include <unistd.h>
 #endif
@@ -1278,8 +1279,8 @@ static int encode_audio(encode_ctx_t* ctx)
 					// Interleave the audio buffer with the # channels for this stream/mapping.
 					for ( k = 0; k < map_channels; k++, j++, source_offset++, dest_offset++ )
 					{
-						void *src = ctx->audio_buf_1 + source_offset * ctx->sample_bytes;
-						void *dest = ctx->audio_buf_2 + dest_offset * ctx->sample_bytes;
+                        uint8_t *src = ctx->audio_buf_1 + source_offset * ctx->sample_bytes;
+                        uint8_t *dest = ctx->audio_buf_2 + dest_offset * ctx->sample_bytes;
 						int s = samples + 1;
 
 						while ( --s ) {
@@ -2139,7 +2140,7 @@ on_fatal_error:
 			remove( mlt_properties_get( properties, "_logfilename" ) );
 
 		// Remove the x264 dual pass logs
-		char *cwd = getcwd( NULL, 0 );
+        char *cwd = _getcwd( NULL, 0 );
 		const char *file = "x264_2pass.log";
 		char *full = malloc( strlen( cwd ) + strlen( file ) + 2 );
 		sprintf( full, "%s/%s", cwd, file );
