@@ -59,8 +59,9 @@ install(TARGETS mltqt EXPORT MltTargets #install target: dll lib exe etc
   INCLUDES DESTINATION include
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-DESTINATION share/mlt
-FILES_MATCHING
-PATTERN "*.yml"
+install(
+    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    DESTINATION share/mlt
+    FILES_MATCHING
+    PATTERN "*.yml"
 )  #install dir

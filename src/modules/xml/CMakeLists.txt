@@ -3,7 +3,6 @@
 set(SRCS
         factory.c
         consumer_xml.c
-        producer_consumer.c
         producer_xml.c
         common.c
         )
@@ -12,12 +11,15 @@ set(HDRS
         common.h
         )
 
+#find_package(xml)
 
 add_library(mltxml MODULE ${SRCS})
+
 if(WIN32)
     target_link_libraries(mltxml mlt pthread_dll)
 else()
-    target_link_libraries(mltxml mlt m pthread)
+    target_link_libraries(mltxml mlt m pthread xml2)
+    INCLUDE_DIRECTORIES(/usr/include/libxml2)
 endif()
 
 set_target_properties( mltxml
@@ -29,7 +31,6 @@ add_custom_command(
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt
         COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/share/mlt/xml
-        COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/mlt-xml.dtd ${MLT_META_DATA_DIRECTORY}/xml/
         )
 
 file(GLOB ymls *.yml)
@@ -50,4 +51,4 @@ DESTINATION share/mlt
 FILES_MATCHING 
 PATTERN "mlt-xml.dtd"
 PATTERN "*.yml"
-)  #install dir
+)  

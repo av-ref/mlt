@@ -110,3 +110,12 @@ include_directories(${CMAKE_BINARY_DIR}/src)
 add_subdirectory(src)
 
 
+install(
+    DIRECTORY presets
+    DESTINATION share/mlt
+)  #install dir
+
+install(
+DIRECTORY profiles
+DESTINATION share/mlt
+)  #install dir

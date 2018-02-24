@@ -17,7 +17,8 @@ add_library(mltfrei0r MODULE ${SRCS})
 if(WIN32)
     target_link_libraries(mltfrei0r mlt frei0r)
 else()
-    target_link_libraries(mltfrei0r mlt frei0r)
+    target_link_libraries(mltfrei0r mlt )
+    INCLUDE_DIRECTORIES(/usr/include)
 endif()
 
 set_target_properties( mltfrei0r

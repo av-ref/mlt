@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file mlt_types.h
  * \brief Provides forward definitions of all public types
  *
@@ -208,11 +208,11 @@ typedef char *( *mlt_serialiser )( void *, int length );/**< pointer to serializ
 //extern char* getlocale();
 //extern FILE* win32_fopen(const char *filename_utf8, const char *mode_utf8);
 //#define mlt_fopen win32_fopen
-//#define MLT_DIRLIST_DELIMITER ";"
+#define MLT_DIRLIST_DELIMITER ";"
 //#else
 //#define mlt_fopen fopen
-//#define MLT_DIRLIST_DELIMITER ":"
 #else /* ifdef _WIN32 */
+#define MLT_DIRLIST_DELIMITER ":"
 #endif
 
 #endif
