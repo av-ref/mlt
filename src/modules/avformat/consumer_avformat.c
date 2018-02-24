@@ -2140,7 +2140,7 @@ on_fatal_error:
 			remove( mlt_properties_get( properties, "_logfilename" ) );
 
 		// Remove the x264 dual pass logs
-        char *cwd = _getcwd( NULL, 0 );
+        char *cwd = getcwd( NULL, 0 );
 		const char *file = "x264_2pass.log";
 		char *full = malloc( strlen( cwd ) + strlen( file ) + 2 );
 		sprintf( full, "%s/%s", cwd, file );
