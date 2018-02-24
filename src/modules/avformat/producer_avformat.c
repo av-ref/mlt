@@ -512,7 +512,7 @@ static char* parse_url( mlt_profile profile, const char* URL, AVInputFormat **fo
 {
 	if ( !URL ) return NULL;
 
-	char *protocol = _strdup( URL );
+	char *protocol = strdup( URL );
 	char *url = strchr( protocol, ':' );
 
 	// Only if there is not a protocol specification that avformat can handle
@@ -540,7 +540,7 @@ static char* parse_url( mlt_profile profile, const char* URL, AVInputFormat **fo
 			while ( url )
 			{
 				url[0] = 0;
-				char *name = _strdup( ++url );
+				char *name = strdup( ++url );
 				char *value = strchr( name, '=' );
 				if ( !value )
 					// Also accept : as delimiter for backwards compatibility.
@@ -558,9 +558,9 @@ static char* parse_url( mlt_profile profile, const char* URL, AVInputFormat **fo
 					else if ( !strcmp( name, "pix_fmt" ) )
 						av_dict_set( params, "pixel_format", value, 0 );
 					else if ( !strcmp( name, "width" ) )
-						width = _strdup( value );
+						width = strdup( value );
 					else if ( !strcmp( name, "height" ) )
-						height = _strdup( value );
+						height = strdup( value );
 					else
 						// generic demux/device option support
 						av_dict_set( params, name, value, 0 );
@@ -581,11 +581,11 @@ static char* parse_url( mlt_profile profile, const char* URL, AVInputFormat **fo
 			free( width );
 			free( height );
 			free( protocol );
-			return _strdup( result );
+			return strdup( result );
 		}
 	}
 	free( protocol );
-	return _strdup( URL );
+	return strdup( URL );
 }
 
 static enum AVPixelFormat pick_pix_fmt( enum AVPixelFormat pix_fmt )

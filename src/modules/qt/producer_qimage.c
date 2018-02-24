@@ -210,7 +210,7 @@ static int load_sequence_querystring( producer_qimage self, mlt_properties prope
 	if ( strchr( filename, '%' ) && strchr( filename, '?' ) )
 	{
 		// Split filename into pattern and query string
-		char *s = _strdup( filename );
+		char *s = strdup( filename );
 		char *querystring = strrchr( s, '?' );
 		*querystring++ = '\0';
 		if ( strstr( filename, "begin=" ) )
@@ -233,7 +233,7 @@ static int load_folder( producer_qimage self, mlt_properties properties, const c
 	if ( strstr( filename, "/.all." ) != NULL )
 	{
 		char wildcard[ 1024 ];
-		char *dir_name = _strdup( filename );
+		char *dir_name = strdup( filename );
 		char *extension = strrchr( dir_name, '.' );
 
 		*( strstr( dir_name, "/.all." ) + 1 ) = '\0';

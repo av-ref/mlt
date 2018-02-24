@@ -176,7 +176,7 @@ mlt_repository mlt_factory_init( const char *directory, const char * datadir )
 		_NSGetExecutablePath( path, &size );
 #endif
 #if defined(_WIN32) || (defined(__APPLE__) && defined(RELOCATABLE))
-		char *path2 = _strdup( path );
+		char *path2 = strdup( path );
 		char *appdir = mlt_dirname( path2 );
 		mlt_properties_set( global_properties, "MLT_APPDIR", appdir );
 		free( path2 );
@@ -211,7 +211,7 @@ mlt_repository mlt_factory_init( const char *directory, const char * datadir )
 //		strcpy( mlt_directory, exedir );
 //		strcat( mlt_directory, directory );
 //#else
-		mlt_directory = _strdup( directory );
+		mlt_directory = strdup( directory );
 //#endif
 		
 		// Initialise the pool

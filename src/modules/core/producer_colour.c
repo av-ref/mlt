@@ -80,7 +80,7 @@ static int producer_get_image( mlt_frame frame, uint8_t **buffer, mlt_image_form
 	// Parse the colour
 	if ( now && strchr( now, '/' ) )
 	{
-		now = _strdup( strrchr( now, '/' ) + 1 );
+		now = strdup( strrchr( now, '/' ) + 1 );
 		mlt_properties_set( producer_props, "resource", now );
 		free( now );
 		now = mlt_properties_get( producer_props, "resource" );

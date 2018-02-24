@@ -140,7 +140,7 @@ mlt_profile mlt_profile_init( const char *name )
 			if ( profile )
 			{
 				mlt_environment_set( "MLT_PROFILE", "dv_pal" );
-				profile->description = _strdup( "PAL 4:3 DV or DVD" );
+				profile->description = strdup( "PAL 4:3 DV or DVD" );
 				profile->frame_rate_num = 25;
 				profile->frame_rate_den = 1;
 				profile->width = 720;
@@ -199,7 +199,7 @@ mlt_profile mlt_profile_load_file( const char *file )
 			profile = mlt_profile_load_properties( properties );
 
 			// Set MLT_PROFILE to basename
-			char *filename = _strdup( file );
+			char *filename = strdup( file );
 			mlt_environment_set( "MLT_PROFILE", basename( filename ) );
 			set_mlt_normalisation( basename( filename ) );
 			free( filename );
@@ -228,7 +228,7 @@ mlt_profile mlt_profile_load_properties( mlt_properties properties )
 		if ( mlt_properties_get( properties, "name" ) )
 			mlt_environment_set( "MLT_PROFILE", mlt_properties_get( properties, "name" ) );
 		if ( mlt_properties_get( properties, "description" ) )
-			profile->description = _strdup( mlt_properties_get( properties, "description" ) );
+			profile->description = strdup( mlt_properties_get( properties, "description" ) );
 		profile->frame_rate_num = mlt_properties_get_int( properties, "frame_rate_num" );
 		profile->frame_rate_den = mlt_properties_get_int( properties, "frame_rate_den" );
 		profile->width = mlt_properties_get_int( properties, "width" );
@@ -350,7 +350,7 @@ mlt_profile mlt_profile_clone( mlt_profile profile )
 		if ( clone )
 		{
 			memcpy( clone, profile, sizeof( *profile ) );
-			clone->description = _strdup( profile->description );
+			clone->description = strdup( profile->description );
 		}
 	}
 	return clone;
@@ -467,7 +467,7 @@ void mlt_profile_from_producer( mlt_profile profile, mlt_producer producer )
 					/ profile->sample_aspect_den );
 				profile->display_aspect_den = profile->height;
 				free( profile->description );
-				profile->description = _strdup( "automatic" );
+				profile->description = strdup( "automatic" );
 				profile->is_explicit = 0;
 			}
 		}

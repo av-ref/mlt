@@ -77,7 +77,7 @@ if(WIN32)
 #    target_include_directories(mlt PRIVATE ${PTHREAD_PATH}/include)
     target_link_libraries( mlt pthread_dll dl)
 else()
-    target_link_libraries( mlt pthread_dll m dl)
+    target_link_libraries( mlt pthread m dl)
 endif(WIN32)
 
 set(Mlt_VERSION 1.0.0)

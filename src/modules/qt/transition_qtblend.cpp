@@ -98,7 +98,7 @@ static int get_image( mlt_frame a_frame, uint8_t **image, mlt_image_format *form
 	// Suppress padding and aspect normalization.
 	char *interps = mlt_properties_get( properties, "rescale.interp" );
 	if ( interps )
-		interps = _strdup( interps );
+		interps = strdup( interps );
 
 	if ( error )
 	{

@@ -68,7 +68,7 @@ static int mlt_tokeniser_append( mlt_tokeniser tokeniser, char *token )
 
 	if ( tokeniser->tokens != NULL )
 	{
-		tokeniser->tokens[ tokeniser->count ++ ] = _strdup( token );
+		tokeniser->tokens[ tokeniser->count ++ ] = strdup( token );
 	}
 	else
 	{
@@ -88,10 +88,10 @@ int mlt_tokeniser_parse_new( mlt_tokeniser tokeniser, char *string, const char *
 	int length = strlen( string );
 	int delimiter_size = strlen( delimiter );
 	int index = 0;
-	char *token = _strdup( string );
+	char *token = strdup( string );
 
 	mlt_tokeniser_clear( tokeniser );
-	tokeniser->input = _strdup( string );
+	tokeniser->input = strdup( string );
 	strcpy( token, "" );
 
 	for ( index = 0; index < length; )

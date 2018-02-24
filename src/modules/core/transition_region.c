@@ -32,7 +32,7 @@ static int create_instance( mlt_transition transition, char *name, char *value, 
 	int error = 0;
 
 	// Duplicate the value
-	char *type = _strdup( value );
+	char *type = strdup( value );
 
 	// Pointer to filter argument
 	char *arg = type == NULL ? NULL : strchr( type, ':' );

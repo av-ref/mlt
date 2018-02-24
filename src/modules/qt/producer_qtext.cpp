@@ -433,7 +433,7 @@ mlt_producer producer_qtext_init( mlt_profile profile, mlt_service_type type, co
 		}
 		else if( filename[ 0 ] == '+' || strstr( filename, "/+" ) )
 		{
-			char *copy = _strdup( filename + 1 );
+			char *copy = strdup( filename + 1 );
 			char *tmp = copy;
 			if ( strstr( tmp, "/+" ) )
 				tmp = strstr( tmp, "/+" ) + 2;
@@ -467,7 +467,7 @@ mlt_producer producer_qtext_init( mlt_profile profile, mlt_service_type type, co
 					}
 					else
 					{
-						tmp = _strdup( line );
+						tmp = strdup( line );
 					}
 				}
 				fclose( f );

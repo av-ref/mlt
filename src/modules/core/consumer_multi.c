@@ -69,7 +69,7 @@ mlt_consumer consumer_multi_init( mlt_profile profile, mlt_service_type type, co
 
 static mlt_consumer create_consumer( mlt_profile profile, char *id, char *arg )
 {
-	char *myid = id ? _strdup( id ) : NULL;
+	char *myid = id ? strdup( id ) : NULL;
 	char *myarg = ( myid && !arg ) ? strchr( myid, ':' ) : NULL;
 	if ( myarg )
 		*myarg ++ = '\0';
@@ -82,7 +82,7 @@ static mlt_consumer create_consumer( mlt_profile profile, char *id, char *arg )
 
 static void create_filter( mlt_profile profile, mlt_service service, char *effect, int *created )
 {
-	char *id = _strdup( effect );
+	char *id = strdup( effect );
 	char *arg = strchr( id, ':' );
 	if ( arg != NULL )
 		*arg ++ = '\0';
@@ -266,7 +266,7 @@ static void foreach_consumer_init( mlt_consumer consumer )
 				// Terminate mlt_service value at the argument delimiter if supplied.
 				// Needed here instead of just relying upon create_consumer() so that
 				// a properties preset is picked up correctly.
-				char *service = _strdup( mlt_properties_get( properties, key ) );
+				char *service = strdup( mlt_properties_get( properties, key ) );
 				char *arg = strchr( service, ':' );
 				if ( arg ) {
 					*arg ++ = '\0';

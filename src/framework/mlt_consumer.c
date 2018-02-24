@@ -233,7 +233,7 @@ static void mlt_consumer_property_changed( mlt_properties owner, mlt_consumer se
 			{
 				free( profile->description );
 				memcpy( profile, new_profile, sizeof( struct mlt_profile_s ) );
-                profile->description = _strdup( new_profile->description );
+                profile->description = strdup( new_profile->description );
 			}
 			else
 			{

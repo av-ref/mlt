@@ -32,7 +32,7 @@ static mlt_properties normalisers = NULL;
 static mlt_producer create_from( mlt_profile profile, char *file, char *services )
 {
 	mlt_producer producer = NULL;
-	char *temp = _strdup( services );
+	char *temp = strdup( services );
 	char *service = temp;
 	do
 	{
@@ -71,7 +71,7 @@ static mlt_producer create_producer( mlt_profile profile, char *file )
 	// And ignore drive letters on Win32 - no single char services supported.
 	if ( strchr( file, ':' ) > file + 1 )
 	{
-		char *temp = _strdup( file );
+		char *temp = strdup( file );
 		char *service = temp;
 		char *resource = strchr( temp, ':' );
 		*resource ++ = '\0';
@@ -83,7 +83,7 @@ static mlt_producer create_producer( mlt_profile profile, char *file )
 	if ( result == NULL )
 	{
 		int i = 0;
-		char *lookup = _strdup( file );
+		char *lookup = strdup( file );
 		char *p = lookup;
 
 		// Make backup of profile for determining if we need to use 'consumer' producer.
@@ -163,7 +163,7 @@ static mlt_producer create_producer( mlt_profile profile, char *file )
 static void create_filter( mlt_profile profile, mlt_producer producer, char *effect, int *created )
 {
 	mlt_filter filter;
-	char *id = _strdup( effect );
+	char *id = strdup( effect );
 	char *arg = strchr( id, ':' );
 	if ( arg != NULL )
 		*arg ++ = '\0';
