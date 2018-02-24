@@ -19,7 +19,7 @@
  */
 
 #include <framework/mlt.h>
-
+#include <pthread.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

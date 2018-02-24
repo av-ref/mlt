@@ -198,7 +198,7 @@ typedef char *( *mlt_serialiser )( void *, int length );/**< pointer to serializ
 #define mlt_fopen fopen
 
 #ifdef _WIN32
-#include <pthread.h>
+
 /* Win32 compatibility function declarations */
 //extern int usleep(unsigned int useconds);
 //#ifndef WIN_PTHREADS_TIME_H

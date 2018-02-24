@@ -25,7 +25,6 @@
 #include "mlt_defines.h"
 #include "mlt_service.h"
 #include "mlt_events.h"
-#include <pthread.h>
 
 /** \brief Consumer abstract service class
  *

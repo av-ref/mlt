@@ -1533,7 +1533,7 @@ static void *consumer_thread( void *arg )
 		char *name = mlt_properties_get_name( properties, i );
 		if ( name && !strncmp( name, "meta.attr.", 10 ) )
 		{
-			char *key = strdup( name + 10 );
+			char *key = _strdup( name + 10 );
 			char *markup = strrchr( key, '.' );
 			if ( markup && !strcmp( markup, ".markup") )
 			{

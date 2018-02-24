@@ -420,7 +420,7 @@ mlt_properties mlt_repository_languages( mlt_repository self )
 	char *locale = getenv_locale();
 	if ( locale )
 	{
-		locale = strdup( locale );
+		locale = _strdup( locale );
 		mlt_tokeniser tokeniser = mlt_tokeniser_init();
 		int count = mlt_tokeniser_parse_new( tokeniser, locale, ":" );
 		if ( count )

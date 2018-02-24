@@ -192,13 +192,13 @@ char* getlocale()
 	if (((ev = getenv ("LC_ALL")) != NULL && ev[0] != '\0')
 		|| ((ev = getenv ("LC_MESSAGES")) != NULL && ev[0] != '\0')
 		|| ((ev = getenv ("LANG")) != NULL && ev[0] != '\0'))
-	  return strdup (ev);
+	  return _strdup (ev);
 
 	lcid = GetThreadLocale ();
 
 	if (!GetLocaleInfo (lcid, LOCALE_SISO639LANGNAME, iso639, sizeof (iso639)) ||
 		!GetLocaleInfo (lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof (iso3166)))
-	  return strdup ("C");
+	  return _strdup ("C");
 
 	/* Strip off the sorting rules, keep only the language part.  */
 	langid = LANGIDFROMLCID (lcid);
@@ -244,7 +244,7 @@ char* getlocale()
 	  }
 	snprintf (result, sizeof(result), "%s_%s%s", iso639, iso3166, script);
 	result[sizeof(result) - 1] = '\0';
-	return strdup (result);
+	return _strdup (result);
 }
 
 FILE* win32_fopen(const char *filename_utf8, const char *mode_utf8)

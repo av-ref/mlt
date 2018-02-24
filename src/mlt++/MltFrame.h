@@ -39,7 +39,7 @@ namespace Mlt
 		public:
 			Frame();
 			Frame( mlt_frame frame );
-			Frame( Frame &frame );
+//			Frame( Frame &frame );
 			Frame( const Frame &frame );
 			virtual ~Frame( );
 			Frame& operator=( const Frame &frame );

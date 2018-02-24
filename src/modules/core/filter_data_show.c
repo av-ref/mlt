@@ -103,7 +103,7 @@ char* metadata_value(mlt_properties properties, char* name)
 
 char* frame_to_timecode( int frames, double fps)
 {
-	if (fps == 0) return strdup("-");
+	if (fps == 0) return _strdup("-");
 	char *res = malloc(12);
 	int seconds = frames / fps;
 	frames = frames % lrint( fps );

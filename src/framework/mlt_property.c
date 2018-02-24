@@ -201,7 +201,7 @@ int mlt_property_set_string( mlt_property self, const char *value )
 		mlt_property_clear( self );
 		self->types = mlt_prop_string;
 		if ( value != NULL )
-			self->prop_string = strdup( value );
+			self->prop_string = _strdup( value );
 	}
 	else
 	{
@@ -271,7 +271,7 @@ int mlt_property_set_data( mlt_property self, void *value, int length, mlt_destr
 
 static int time_clock_to_frames( mlt_property self, const char *s, double fps, locale_t locale )
 {
-	char *pos, *copy = strdup( s );
+	char *pos, *copy = _strdup( s );
 	int hours = 0, minutes = 0;
 	double seconds;
 
@@ -286,7 +286,7 @@ static int time_clock_to_frames( mlt_property self, const char *s, double fps, l
 		pthread_mutex_lock( &self->mutex );
 
 		// Get the current locale
-		orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+		orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 
 		// Set the new locale
 		setlocale( LC_NUMERIC, locale );
@@ -345,7 +345,7 @@ static int time_clock_to_frames( mlt_property self, const char *s, double fps, l
 
 static int time_code_to_frames( mlt_property self, const char *s, double fps )
 {
-	char *pos, *copy = strdup( s );
+	char *pos, *copy = _strdup( s );
 	int hours = 0, minutes = 0, seconds = 0, frames;
 
 	s = copy;
@@ -500,7 +500,7 @@ static double mlt_property_atof( mlt_property self, double fps, locale_t locale 
 			pthread_mutex_lock( &self->mutex );
 
 			// Get the current locale
-			orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+			orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 
 			// Set the new locale
 			setlocale( LC_NUMERIC, locale );
@@ -707,7 +707,7 @@ char *mlt_property_get_string_l( mlt_property self, locale_t locale )
 		pthread_mutex_lock( &self->mutex );
 
 		// Get the current locale
-		char *orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+		char *orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 
 		// Set the new locale
 		setlocale( LC_NUMERIC, localename );
@@ -818,7 +818,7 @@ void mlt_property_pass( mlt_property self, mlt_property that )
 	if ( self->types & mlt_prop_string )
 	{
 		if ( that->prop_string != NULL )
-			self->prop_string = strdup( that->prop_string );
+			self->prop_string = _strdup( that->prop_string );
 	}
 	else if ( that->types & mlt_prop_rect )
 	{
@@ -947,7 +947,7 @@ char *mlt_property_get_time( mlt_property self, mlt_time_format format, double f
 		pthread_mutex_lock( &self->mutex );
 
 		// Get the current locale
-		orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+		orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 
 		// Set the new locale
 		setlocale( LC_NUMERIC, localename );
@@ -1043,7 +1043,7 @@ static int is_property_numeric( mlt_property self, locale_t locale )
 			pthread_mutex_lock( &self->mutex );
 
 			// Get the current locale
-			orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+			orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 
 			// Set the new locale
 			setlocale( LC_NUMERIC, locale );
@@ -1323,7 +1323,7 @@ char* mlt_property_anim_get_string( mlt_property self, double fps, locale_t loca
 		pthread_mutex_lock( &self->mutex );
 
 		if ( self->prop_string )
-			self->prop_string = strdup( self->prop_string );
+			self->prop_string = _strdup( self->prop_string );
 		self->types |= mlt_prop_string;
 
 		result = self->prop_string;
@@ -1543,7 +1543,7 @@ mlt_rect mlt_property_get_rect( mlt_property self, locale_t locale )
 			pthread_mutex_lock( &self->mutex );
 
 			// Get the current locale
-			orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+			orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 
 			// Set the new locale
 			setlocale( LC_NUMERIC, locale );

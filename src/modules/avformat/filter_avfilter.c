@@ -367,7 +367,7 @@ static void init_image_filtergraph( mlt_filter filter, mlt_image_format format, 
 		freelocale( posix_locale );
 #else
 		// Get the current locale and swtich to POSIX local.
-		char *orig_localename = strdup( setlocale( LC_NUMERIC, NULL ) );
+		char *orig_localename = _strdup( setlocale( LC_NUMERIC, NULL ) );
 		setlocale( LC_NUMERIC, "C" );
 		// Initialize the filter.
 		ret = avfilter_init_str(  pdata->avfilter_ctx, NULL );

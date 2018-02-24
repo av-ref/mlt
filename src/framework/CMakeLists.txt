@@ -75,9 +75,9 @@ add_library(mlt SHARED ${SRCS} ${HDRS} )
 
 if(WIN32)
 #    target_include_directories(mlt PRIVATE ${PTHREAD_PATH}/include)
-    target_link_libraries( mlt pthread dl)
+    target_link_libraries( mlt pthread_dll dl)
 else()
-    target_link_libraries( mlt pthread m dl)
+    target_link_libraries( mlt pthread_dll m dl)
 endif(WIN32)
 
 set(Mlt_VERSION 1.0.0)
@@ -96,7 +96,7 @@ install(TARGETS mlt EXPORT MltTargets #install target: dll lib exe etc
 )
 
 # install headers
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DESTINATION include/ FILES_MATCHING PATTERN "*.h")  #install dir
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DESTINATION include/mlt/ FILES_MATCHING PATTERN "*.h")  #install dir
 
 # install version file
 include(CMakePackageConfigHelpers)

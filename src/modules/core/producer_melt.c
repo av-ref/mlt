@@ -47,7 +47,7 @@ mlt_producer producer_melt_file_init( mlt_profile profile, mlt_service_type type
 				mlt_log_warning( NULL, "Exceeded maximum line length (%d) while reading a melt file.\n", MELT_FILE_MAX_LENGTH );
 			temp[ strlen( temp ) - 1 ] = '\0';
 			if ( strcmp( temp, "" ) )
-				args[ count ++ ] = strdup( temp );
+				args[ count ++ ] = _strdup( temp );
 		}
 		fclose( input );
 		if ( count == MELT_FILE_MAX_LINES )
@@ -90,7 +90,7 @@ static mlt_producer create_producer( mlt_profile profile, mlt_field field, char 
 
 static mlt_filter create_attach( mlt_profile profile, mlt_field field, char *id, int track )
 {
-	char *temp = strdup( id );
+	char *temp = _strdup( id );
 	char *arg = strchr( temp, ':' );
 	if ( arg != NULL )
 		*arg ++ = '\0';
@@ -103,7 +103,7 @@ static mlt_filter create_attach( mlt_profile profile, mlt_field field, char *id,
 
 static mlt_filter create_filter( mlt_profile profile, mlt_field field, char *id, int track )
 {
-	char *temp = strdup( id );
+	char *temp = _strdup( id );
 	char *arg = strchr( temp, ':' );
 	if ( arg != NULL )
 		*arg ++ = '\0';
@@ -338,7 +338,7 @@ mlt_producer producer_melt_init( mlt_profile profile, mlt_service_type type, con
 		{
 			if ( mix != NULL )
 			{
-				char *id = strdup( argv[ ++ i ] );
+				char *id = _strdup( argv[ ++ i ] );
 				char *arg = strchr( id, ':' );
 				mlt_field field = mlt_tractor_field( mix );
 				mlt_transition transition = NULL;

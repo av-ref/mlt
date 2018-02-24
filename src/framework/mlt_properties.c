@@ -148,7 +148,7 @@ int mlt_properties_set_lcnumeric( mlt_properties self, const char *locale )
 #else
 
 		free( list->locale );
-		list->locale = strdup( locale );
+		list->locale = _strdup( locale );
 #endif
 	}
 	else
@@ -554,7 +554,7 @@ static mlt_property mlt_properties_add( mlt_properties self, const char *name )
 	}
 
 	// Assign name/value pair
-	list->name[ list->count ] = strdup( name );
+	list->name[ list->count ] = _strdup( name );
 	list->value[ list->count ] = mlt_property_init( );
 
 	// Assign to hash table
@@ -624,7 +624,7 @@ void mlt_properties_pass_property( mlt_properties self, mlt_properties that, con
 int mlt_properties_pass_list( mlt_properties self, mlt_properties that, const char *list )
 {
 	if ( !self || !that || !list ) return 1;
-	char *props = strdup( list );
+	char *props = _strdup( list );
 	char *ptr = props;
 	const char *delim = " ,\t\n";	// Any combination of spaces, commas, tabs, and newlines
 	int count, done = 0;
@@ -874,7 +874,7 @@ int mlt_properties_count( mlt_properties self )
 int mlt_properties_parse( mlt_properties self, const char *namevalue )
 {
 	if ( !self ) return 1;
-	char *name = strdup( namevalue );
+	char *name = _strdup( namevalue );
 	char *value = NULL;
 	int error = 0;
 	char *ptr = strchr( name, '=' );
@@ -885,19 +885,19 @@ int mlt_properties_parse( mlt_properties self, const char *namevalue )
 
 		if ( *ptr != '\"' )
 		{
-			value = strdup( ptr );
+			value = _strdup( ptr );
 		}
 		else
 		{
 			ptr ++;
-			value = strdup( ptr );
+			value = _strdup( ptr );
 			if ( value != NULL && value[ strlen( value ) - 1 ] == '\"' )
 				value[ strlen( value ) - 1 ] = '\0';
 		}
 	}
 	else
 	{
-		value = strdup( "" );
+		value = _strdup( "" );
 	}
 
 	error = mlt_properties_set( self, name, value );
@@ -1179,7 +1179,7 @@ int mlt_properties_rename( mlt_properties self, const char *source, const char *
 			if ( list->name[ i ] && !strcmp( list->name[ i ], source ) )
 			{
 				free( list->name[ i ] );
-				list->name[ i ] = strdup( dest );
+				list->name[ i ] = _strdup( dest );
 				list->hash[ generate_hash( dest ) ] = i + 1;
 				break;
 			}
@@ -1511,7 +1511,7 @@ static unsigned int rtrim( char *s )
 
 static int parse_yaml( yaml_parser context, const char *namevalue )
 {
-	char *name_ = strdup( namevalue );
+	char *name_ = _strdup( namevalue );
 	char *name = name_;
 	char *value = NULL;
 	int error = 0;
@@ -1600,7 +1600,7 @@ static int parse_yaml( yaml_parser context, const char *namevalue )
 		if ( *ptr == '\"' )
 		{
 			ptr ++;
-			value = strdup( ptr );
+			value = _strdup( ptr );
 			if ( value && value[ strlen( value ) - 1 ] == '\"' )
 				value[ strlen( value ) - 1 ] = 0;
 		}
@@ -1609,15 +1609,15 @@ static int parse_yaml( yaml_parser context, const char *namevalue )
 		else if ( *ptr == '|' || *ptr == '>' )
 		{
 			context->block = *ptr;
-			context->block_name = strdup( name );
+			context->block_name = _strdup( name );
 			context->block_indent = 0;
-			value = strdup( "" );
+			value = _strdup( "" );
 		}
 
 		// Bare value
 		else
 		{
-			value = strdup( ptr );
+			value = _strdup( ptr );
 		}
 	}
 
@@ -1650,7 +1650,7 @@ static int parse_yaml( yaml_parser context, const char *namevalue )
 		if ( *ptr == '\"' )
 		{
 			ptr ++;
-			value = strdup( ptr );
+			value = _strdup( ptr );
 			if ( value && value[ strlen( value ) - 1 ] == '\"' )
 				value[ strlen( value ) - 1 ] = 0;
 		}
@@ -1659,19 +1659,19 @@ static int parse_yaml( yaml_parser context, const char *namevalue )
 		else if ( *ptr == '|' || *ptr == '>' )
 		{
 			context->block = *ptr;
-			context->block_name = strdup( key );
+			context->block_name = _strdup( key );
 			context->block_indent = 0;
-			value = strdup( "" );
+			value = _strdup( "" );
 		}
 
 		// Bare value
 		else
 		{
-			value = strdup( ptr );
+			value = _strdup( ptr );
 		}
 
 		free( name_ );
-		name = name_ = strdup( key );
+		name = name_ = _strdup( key );
 	}
 
 	// Non-folded block
@@ -1719,7 +1719,7 @@ static int parse_yaml( yaml_parser context, const char *namevalue )
 
 	else
 	{
-		value = strdup( "" );
+		value = _strdup( "" );
 	}
 
 	error = mlt_properties_set( properties, name, value );
@@ -1887,7 +1887,7 @@ static inline void indent_yaml( strbuf output, int indent )
 
 static void strbuf_escape( strbuf output, const char *value, char c )
 {
-	char *v = strdup( value );
+	char *v = _strdup( value );
 	char *s = v;
 	char *found = strchr( s, c );
 
@@ -1912,7 +1912,7 @@ static void strbuf_escape( strbuf output, const char *value, char c )
 
 static void output_yaml_block_literal( strbuf output, const char *value, int indent )
 {
-	char *v = strdup( value );
+	char *v = _strdup( value );
 	char *sol = v;
 	char *eol = strchr( sol, '\n' );
 

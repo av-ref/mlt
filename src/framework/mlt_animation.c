@@ -187,7 +187,7 @@ int mlt_animation_parse(mlt_animation self, const char *data, int length, double
 
 	// Update the info on the data
 	if ( data )
-		self->data = strdup( data );
+		self->data = _strdup( data );
 	self->length = length;
 	self->fps = fps;
 	self->locale = locale;
@@ -314,7 +314,7 @@ int mlt_animation_parse_item( mlt_animation self, mlt_animation_item item, const
 			// Null terminate the string at the equal sign to prevent interpreting
 			// a colon in the part to the right of the equal sign as indicative of a
 			// a time value string.
-			char *s = strdup( value );
+			char *s = _strdup( value );
 			char *p = strchr( s, '=' );
 			p[0] = '\0';
 			mlt_property_set_string( item->property, s );
@@ -697,7 +697,7 @@ char *mlt_animation_serialize( mlt_animation self )
 	{
 		free( self->data );
 		self->data = ret;
-		ret = strdup( ret );
+		ret = _strdup( ret );
 	}
 	return ret;
 }

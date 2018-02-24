@@ -35,12 +35,12 @@ Frame::Frame( mlt_frame frame ) :
 	inc_ref( );
 }
 
-Frame::Frame( Frame &frame ) :
-	Mlt::Properties( (mlt_properties)NULL ),
-	instance( frame.instance )
-{
-	inc_ref( );
-}
+//Frame::Frame( Frame &frame ) :
+//	Mlt::Properties( (mlt_properties)NULL ),
+//	instance( frame.instance )
+//{
+//	inc_ref( );
+//}
 
 Frame::Frame( const Frame &frame ) :
 	Mlt::Properties( (mlt_properties)NULL ),

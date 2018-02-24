@@ -35,7 +35,7 @@ Filter::Filter( Profile& profile, const char *id, const char *arg ) :
 	{
 		if ( strchr( id, ':' ) )
 		{
-			char *temp = strdup( id );
+			char *temp = _strdup( id );
 			char *arg = strchr( temp, ':' ) + 1;
 			*( arg - 1 ) = '\0';
 			instance = mlt_factory_filter( profile.get_profile(), temp, arg );

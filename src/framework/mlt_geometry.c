@@ -232,7 +232,7 @@ int mlt_geometry_parse( mlt_geometry self, char *data, int length, int nw, int n
 	if ( nh != -1 )
 		g->nh = nh;
 	if ( data != NULL )
-		g->data = strdup( data );
+        g->data = _strdup( data );
 
 	// Tokenise
 	if ( data != NULL )
@@ -697,7 +697,7 @@ char *mlt_geometry_serialise( mlt_geometry self )
 		free( g->data );
 		g->data = ret;
 	}
-	return strdup( ret );
+    return _strdup( ret );
 }
 
 // Close the geometry

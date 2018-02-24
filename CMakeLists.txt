@@ -11,6 +11,11 @@ set(CMAKE_MODULE_PATH
 project(mlt)
 
 
+#install
+if(WIN32)
+    set(CMAKE_INSTALL_PREFIX "E:/workspace_ffmpeg/build")
+endif(WIN32)
+
 # ffmpeg
 set(FFmpegPath       "E:/workspace_ffmpeg/3rd/ffmpeg")
 if(WIN32)

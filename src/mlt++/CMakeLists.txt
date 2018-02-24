@@ -75,7 +75,7 @@ install(TARGETS mlt++ EXPORT MltTargets #install target: dll lib exe etc
 )
 
 # install headers
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DESTINATION include/ FILES_MATCHING PATTERN "*.h")  #install dir
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DESTINATION include/mlt/ FILES_MATCHING PATTERN "*.h")  #install dir
 
 # install version file
 include(CMakePackageConfigHelpers)
