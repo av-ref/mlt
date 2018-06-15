@@ -3,7 +3,7 @@
  * \brief Property Animation class definition
  * \see mlt_animation_s
  *
- * Copyright (C) 2004-2014 Meltytech, LLC
+ * Copyright (C) 2004-2018 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,8 @@
 #include "mlt_animation.h"
 #include "mlt_tokeniser.h"
 #include "mlt_profile.h"
+#include "mlt_factory.h"
+#include "mlt_properties.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,7 +75,7 @@ mlt_animation mlt_animation_new( )
 void mlt_animation_interpolate( mlt_animation self )
 {
 	// Parse all items to ensure non-keyframes are calculated correctly.
-	if ( self->nodes )
+	if ( self && self->nodes )
 	{
 		animation_node current = self->nodes;
 		while ( current )
@@ -156,6 +158,8 @@ static int mlt_animation_drop( mlt_animation self, animation_node node )
 
 static void mlt_animation_clean( mlt_animation self )
 {
+	if (!self) return;
+
 	free( self->data );
 	self->data = NULL;
 	while ( self->nodes )
@@ -177,6 +181,8 @@ static void mlt_animation_clean( mlt_animation self )
 
 int mlt_animation_parse(mlt_animation self, const char *data, int length, double fps, locale_t locale )
 {
+	if (!self) return 1;
+
 	int error = 0;
 	int i = 0;
 	struct mlt_animation_item_s item;
@@ -192,6 +198,8 @@ int mlt_animation_parse(mlt_animation self, const char *data, int length, double
 	self->fps = fps;
 	self->locale = locale;
 	item.property = mlt_property_init();
+	item.frame = item.is_key = 0;
+	item.keyframe_type = mlt_keyframe_discrete;
 
 	// Tokenise
 	if ( data )
@@ -236,6 +244,8 @@ int mlt_animation_parse(mlt_animation self, const char *data, int length, double
 
 int mlt_animation_refresh( mlt_animation self, const char *data, int length )
 {
+	if (!self) return 1;
+
 	if ( ( length != self->length )|| ( data && ( !self->data || strcmp( data, self->data ) ) ) )
 		return mlt_animation_parse( self, data, length, self->fps, self->locale );
 	return 0;
@@ -305,7 +315,7 @@ int mlt_animation_parse_item( mlt_animation self, mlt_animation_item item, const
 {
 	int error = 0;
 
-	if ( value && strcmp( value, "" ) )
+	if ( self && item && value && strcmp( value, "" ) )
 	{
 		// Determine if a position has been specified
 		if ( strchr( value, '=' ) )
@@ -360,6 +370,8 @@ int mlt_animation_parse_item( mlt_animation self, mlt_animation_item item, const
 
 int mlt_animation_get_item( mlt_animation self, mlt_animation_item item, int position )
 {
+	if (!self || !item) return 1;
+
 	int error = 0;
 	// Need to find the nearest keyframe to the position specifed
 	animation_node node = self->nodes;
@@ -433,6 +445,8 @@ int mlt_animation_get_item( mlt_animation self, mlt_animation_item item, int pos
 
 int mlt_animation_insert( mlt_animation self, mlt_animation_item item )
 {
+	if (!self || !item) return 1;
+
 	int error = 0;
 	animation_node node = calloc( 1, sizeof( *node ) );
 	node->item.frame = item->frame;
@@ -499,6 +513,8 @@ int mlt_animation_insert( mlt_animation self, mlt_animation_item item )
 
 int mlt_animation_remove( mlt_animation self, int position )
 {
+	if (!self) return 1;
+
 	int error = 1;
 	animation_node node = self->nodes;
 
@@ -522,6 +538,8 @@ int mlt_animation_remove( mlt_animation self, int position )
 
 int mlt_animation_next_key( mlt_animation self, mlt_animation_item item, int position )
 {
+	if (!self || !item) return 1;
+
 	animation_node node = self->nodes;
 
 	while ( node && position > node->item.frame )
@@ -550,6 +568,8 @@ int mlt_animation_next_key( mlt_animation self, mlt_animation_item item, int pos
 
 int mlt_animation_prev_key( mlt_animation self, mlt_animation_item item, int position )
 {
+	if (!self || !item) return 1;
+
 	animation_node node = self->nodes;
 
 	while ( node && node->next && position >= node->next->item.frame )
@@ -567,33 +587,35 @@ int mlt_animation_prev_key( mlt_animation self, mlt_animation_item item, int pos
 	return ( node == NULL );
 }
 
-/** Serialize a cut of the animation.
+/** Serialize a cut of the animation (with time format).
  *
  * The caller is responsible for free-ing the returned string.
  * \public \memberof mlt_animation_s
  * \param self an animation
  * \param in the frame at which to start serializing animation nodes
  * \param out the frame at which to stop serializing nodes
+ * \param time_format the time format to use for the key frames
  * \return a string representing the animation
  */
 
-char *mlt_animation_serialize_cut( mlt_animation self, int in, int out )
+char *mlt_animation_serialize_cut_tf( mlt_animation self, int in, int out, mlt_time_format time_format )
 {
 	struct mlt_animation_item_s item;
-	char *ret = malloc( 1000 );
+	char *ret = calloc( 1, 1000 );
 	size_t used = 0;
 	size_t size = 1000;
+	mlt_property time_property = mlt_property_init();
 
 	item.property = mlt_property_init();
+	item.frame = item.is_key = 0;
+	item.keyframe_type = mlt_keyframe_discrete;
 	if ( in == -1 )
 		in = 0;
 	if ( out == -1 )
 		out = mlt_animation_get_length( self );
 
-	if ( ret )
+	if ( self && ret )
 	{
-		strcpy( ret, "" );
-
 		item.frame = in;
 
 		while ( 1 )
@@ -634,8 +656,7 @@ char *mlt_animation_serialize_cut( mlt_animation self, int in, int out )
 			}
 
 			// Determine length of string to be appended.
-			if ( item.frame - in != 0 )
-				item_len += 20;
+			item_len += 100;
 			if ( item.is_key )
 				item_len += strlen( mlt_property_get_string_l( item.property, self->locale ) );
 
@@ -667,7 +688,13 @@ char *mlt_animation_serialize_cut( mlt_animation self, int in, int out )
 					s = "";
 					break;
 				}
-				sprintf( ret + used, "%d%s=", item.frame - in, s );
+				if ( time_property && self->fps > 0.0 ) {
+					mlt_property_set_int( time_property, item.frame - in );
+					const char *time = mlt_property_get_time( time_property, time_format, self->fps, self->locale );
+					sprintf( ret + used, "%s%s=", time, s );
+				} else {
+					sprintf( ret + used, "%d%s=", item.frame - in, s );
+				}
 
 				// Append item value.
 				if ( item.is_key )
@@ -678,12 +705,57 @@ char *mlt_animation_serialize_cut( mlt_animation self, int in, int out )
 		}
 	}
 	mlt_property_close( item.property );
+	mlt_property_close( time_property );
 
+	return ret;
+}
+
+static mlt_time_format default_time_format()
+{
+	const char *e = getenv("MLT_ANIMATION_TIME_FORMAT");
+	return e? strtol( e, NULL, 10 ) : mlt_time_frames;
+}
+
+/** Serialize a cut of the animation.
+ *
+ * This version outputs the key frames' position as a frame number.
+ * The caller is responsible for free-ing the returned string.
+ * \public \memberof mlt_animation_s
+ * \param self an animation
+ * \param in the frame at which to start serializing animation nodes
+ * \param out the frame at which to stop serializing nodes
+ * \return a string representing the animation
+ */
+
+char *mlt_animation_serialize_cut( mlt_animation self, int in, int out )
+{
+	return mlt_animation_serialize_cut_tf( self, in, out, default_time_format() );
+}
+
+/** Serialize the animation (with time format).
+ *
+ * The caller is responsible for free-ing the returned string.
+ * \public \memberof mlt_animation_s
+ * \param self an animation
+ * \param time_format the time format to use for the key frames
+ * \return a string representing the animation
+ */
+
+char *mlt_animation_serialize_tf( mlt_animation self, mlt_time_format time_format )
+{
+	char *ret = mlt_animation_serialize_cut_tf( self, -1, -1, time_format );
+	if ( self && ret )
+	{
+		free( self->data );
+		self->data = ret;
+		ret = _strdup( ret );
+	}
 	return ret;
 }
 
 /** Serialize the animation.
  *
+ * This version outputs the key frames' position as a frame number.
  * The caller is responsible for free-ing the returned string.
  * \public \memberof mlt_animation_s
  * \param self an animation
@@ -692,14 +764,7 @@ char *mlt_animation_serialize_cut( mlt_animation self, int in, int out )
 
 char *mlt_animation_serialize( mlt_animation self )
 {
-	char *ret = mlt_animation_serialize_cut( self, -1, -1 );
-	if ( ret )
-	{
-		free( self->data );
-		self->data = ret;
-		ret = _strdup( ret );
-	}
-	return ret;
+	return mlt_animation_serialize_tf( self, default_time_format() );
 }
 
 /** Get the number of keyframes.
@@ -726,12 +791,14 @@ int mlt_animation_key_count( mlt_animation self )
  * \public \memberof mlt_animation_s
  * \param self an animation
  * \param item an already allocated animation item that will be filled in
- * \param position the frame number for the point in time
+ * \param index the N-th keyframe (0 based) in this animation
  * \return true if there was an error
  */
 
 int mlt_animation_key_get( mlt_animation self, mlt_animation_item item, int index )
 {
+	if (!self || !item) return 1;
+
 	int error = 0;
 	animation_node node = self->nodes;
 
@@ -770,4 +837,66 @@ void mlt_animation_close( mlt_animation self )
 		mlt_animation_clean( self );
 		free( self );
 	}
+}
+
+/** Change the interpolation for the N-th keyframe.
+ *
+ * \public \memberof mlt_animation_s
+ * \param self an animation
+ * \param index the N-th keyframe (0 based) in this animation
+ * \param type the method of interpolation for this key frame
+ * \return true if there was an error
+ */
+
+int mlt_animation_key_set_type(mlt_animation self, int index, mlt_keyframe_type type)
+{
+	if (!self) return 1;
+
+	int error = 0;
+	animation_node node = self->nodes;
+
+	// Iterate through the keyframes.
+	int i = index;
+	while ( i-- && node )
+		node = node->next;
+
+	if ( node ) {
+		node->item.keyframe_type = type;
+		mlt_animation_interpolate(self);
+	} else {
+		error = 1;
+	}
+
+	return error;
+}
+
+/** Change the frame number for the N-th keyframe.
+ *
+ * \public \memberof mlt_animation_s
+ * \param self an animation
+ * \param index the N-th keyframe (0 based) in this animation
+ * \param frame the position of this keyframe in frame units
+ * \return true if there was an error
+ */
+
+int mlt_animation_key_set_frame(mlt_animation self, int index, int frame)
+{
+	if (!self) return 1;
+
+	int error = 0;
+	animation_node node = self->nodes;
+
+	// Iterate through the keyframes.
+	int i = index;
+	while ( i-- && node )
+		node = node->next;
+
+	if ( node ) {
+		node->item.frame = frame;
+		mlt_animation_interpolate(self);
+	} else {
+		error = 1;
+	}
+
+	return error;
 }

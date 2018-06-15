@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "common.h"
+
 // mlt Header files
 #include <framework/mlt_consumer.h>
 #include <framework/mlt_frame.h>
@@ -100,6 +102,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 #include <libavutil/samplefmt.h>
 #include <libavutil/opt.h>
 #include <libavutil/imgutils.h>
+#include <libavutil/version.h>
 
 #if LIBAVCODEC_VERSION_MAJOR < 55
 #define AV_CODEC_ID_PCM_S16LE CODEC_ID_PCM_S16LE
@@ -127,7 +130,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 #define AUDIO_ENCODE_BUFFER_SIZE (48000 * 2 * MAX_AUDIO_STREAMS)
 #define AUDIO_BUFFER_SIZE (1024 * 42)
 #define VIDEO_BUFFER_SIZE (8192 * 8192)
-#define IMAGE_ALIGN (1)
+#define IMAGE_ALIGN (4)
 
 //
 // This structure should be extended and made globally available in mlt
@@ -345,6 +348,16 @@ static void property_changed( mlt_properties owner, mlt_consumer self, char *nam
 		mlt_properties_set_int( properties, "frame_rate_num", rational.num );
 		mlt_properties_set_int( properties, "frame_rate_den", rational.den );
 	}
+    // Apply AVOptions that are synonyms for standard mlt_consumer options
+    else if ( !strcmp( name, "ac" ) )
+    {
+        mlt_properties_set_int( properties, "channels", mlt_properties_get_int( properties, "ac" ) );
+    }
+    else if ( !strcmp( name, "ar" ))
+    {
+        mlt_properties_set_int( properties, "frequency", mlt_properties_get_int( properties, "ar" ) );
+    }
+
 }
 
 /** Start the consumer.
@@ -389,7 +402,11 @@ static int consumer_start( mlt_consumer consumer )
 		mlt_properties_set_data( properties, "acodec", codecs, 0, (mlt_destructor) mlt_properties_close, NULL );
 		mlt_properties_set_data( doc, "audio_codecs", codecs, 0, NULL, NULL );
 		while ( ( codec = av_codec_next( codec ) ) )
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+			if ( (codec->encode2 || codec->send_frame) && codec->type == AVMEDIA_TYPE_AUDIO )
+#else
 			if ( codec->encode2 && codec->type == AVMEDIA_TYPE_AUDIO )
+#endif
 			{
 				snprintf( key, sizeof(key), "%d", mlt_properties_count( codecs ) );
 				mlt_properties_set( codecs, key, codec->name );
@@ -411,7 +428,11 @@ static int consumer_start( mlt_consumer consumer )
 		mlt_properties_set_data( properties, "vcodec", codecs, 0, (mlt_destructor) mlt_properties_close, NULL );
 		mlt_properties_set_data( doc, "video_codecs", codecs, 0, NULL, NULL );
 		while ( ( codec = av_codec_next( codec ) ) )
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+			if ( (codec->encode2 || codec->send_frame) && codec->type == AVMEDIA_TYPE_VIDEO )
+#else
 			if ( codec->encode2 && codec->type == AVMEDIA_TYPE_VIDEO )
+#endif
 			{
 				snprintf( key, sizeof(key), "%d", mlt_properties_count( codecs ) );
 				mlt_properties_set( codecs, key, codec->name );
@@ -431,13 +452,7 @@ static int consumer_start( mlt_consumer consumer )
 
 		mlt_event_block( mlt_properties_get_data( properties, "property-changed event", NULL ) );
 
-		// Apply AVOptions that are synonyms for standard mlt_consumer options
-		if ( mlt_properties_get( properties, "ac" ) )
-			mlt_properties_set_int( properties, "channels", mlt_properties_get_int( properties, "ac" ) );
-		if ( mlt_properties_get( properties, "ar" ) )
-			mlt_properties_set_int( properties, "frequency", mlt_properties_get_int( properties, "ar" ) );
-
-		// Because Movit only reads this on the first frame,
+        // Because Movit only reads this on the first frame,
 		// we must do this after properties have been set but before first frame request.
 		if ( !mlt_properties_get( properties, "color_trc") )
 			color_trc_from_colorspace( properties );
@@ -500,16 +515,17 @@ static void apply_properties( void *obj, mlt_properties properties, int flags )
 	for ( i = 0; i < count; i++ )
 	{
 		const char *opt_name = mlt_properties_get_name( properties, i );
-		const AVOption *opt = av_opt_find( obj, opt_name, NULL, flags, flags );
+		int search_flags = AV_OPT_SEARCH_CHILDREN;
+		const AVOption *opt = av_opt_find( obj, opt_name, NULL, flags, search_flags );
 
 		// If option not found, see if it was prefixed with a or v (-vb)
 		if ( !opt && (
 			( opt_name[0] == 'v' && ( flags & AV_OPT_FLAG_VIDEO_PARAM ) ) ||
 			( opt_name[0] == 'a' && ( flags & AV_OPT_FLAG_AUDIO_PARAM ) ) ) )
-			opt = av_opt_find( obj, ++opt_name, NULL, flags, flags );
+			opt = av_opt_find( obj, ++opt_name, NULL, flags, search_flags );
 		// Apply option if found
-		if ( opt )
-			av_opt_set( obj, opt_name, mlt_properties_get_value( properties, i), 0 );
+		if ( opt &&  strcmp( opt_name, "channel_layout" ) )
+			av_opt_set( obj, opt_name, mlt_properties_get_value( properties, i), search_flags );
 	}
 }
 
@@ -624,7 +640,7 @@ static uint8_t* interleaved_to_planar( int samples, int channels, uint8_t* audio
 /** Add an audio output stream
 */
 
-static AVStream *add_audio_stream( mlt_consumer consumer, AVFormatContext *oc, AVCodec *codec, int channels )
+static AVStream *add_audio_stream( mlt_consumer consumer, AVFormatContext *oc, AVCodec *codec, int channels, int64_t channel_layout )
 {
 	// Get the properties
 	mlt_properties properties = MLT_CONSUMER_PROPERTIES( consumer );
@@ -643,7 +659,7 @@ static AVStream *add_audio_stream( mlt_consumer consumer, AVFormatContext *oc, A
 		c->codec_id = codec->id;
 		c->codec_type = AVMEDIA_TYPE_AUDIO;
 		c->sample_fmt = pick_sample_fmt( properties, codec );
-		c->channel_layout = av_get_default_channel_layout( channels );
+		c->channel_layout = channel_layout;
 
 #if 0 // disabled until some audio codecs are multi-threaded
 		// Setup multi-threading
@@ -653,7 +669,7 @@ static AVStream *add_audio_stream( mlt_consumer consumer, AVFormatContext *oc, A
 		if ( thread_count >= 0 )
 			c->thread_count = thread_count;
 #endif
-	
+
 		if (oc->oformat->flags & AVFMT_GLOBALHEADER) 
 			c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 		
@@ -846,6 +862,10 @@ static AVStream *add_video_stream( mlt_consumer consumer, AVFormatContext *oc, A
 		if ( st->time_base.den == 0 )
 #endif
 		st->time_base = c->time_base;
+		st->avg_frame_rate = av_inv_q( c->time_base );
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(56, 5, 0)
+		c->framerate = av_inv_q( c->time_base );
+#endif
 
 		// Default to the codec's first pix_fmt if possible.
 		c->pix_fmt = pix_fmt ? av_get_pix_fmt( pix_fmt ) : codec ?
@@ -1225,13 +1245,25 @@ static int encode_audio(encode_ctx_t* ctx)
 			ctx->sample_count[i] += ctx->audio_avframe->nb_samples;
 			avcodec_fill_audio_frame( ctx->audio_avframe, codec->channels, codec->sample_fmt,
 				(const uint8_t*) p, AUDIO_ENCODE_BUFFER_SIZE, 0 );
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+			int ret = avcodec_send_frame( codec, samples ? ctx->audio_avframe : NULL );
+			if ( ret < 0 ) {
+				pkt.size = ret;
+			} else {
+				ret = avcodec_receive_packet( codec, &pkt );
+				if ( ret == AVERROR(EAGAIN) || ret == AVERROR_EOF )
+					pkt.size = 0;
+				else if ( ret < 0 )
+					pkt.size = ret;
+			}
+#else
 			int got_packet = 0;
 			int ret = avcodec_encode_audio2( codec, &pkt, samples ? ctx->audio_avframe : NULL, &got_packet );
 			if ( ret < 0 )
 				pkt.size = ret;
 			else if ( !got_packet )
 				pkt.size = 0;
-
+#endif
 			if ( p != ctx->audio_buf_1 )
 				mlt_pool_release( p );
 		}
@@ -1304,12 +1336,26 @@ static int encode_audio(encode_ctx_t* ctx)
 #endif
 			avcodec_fill_audio_frame( ctx->audio_avframe, codec->channels, codec->sample_fmt,
 				(const uint8_t*) ctx->audio_buf_2, AUDIO_ENCODE_BUFFER_SIZE, 0 );
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+			int ret = avcodec_send_frame( codec, samples ? ctx->audio_avframe : NULL );
+			if ( ret < 0 ) {
+				pkt.size = ret;
+			} else {
+receive_audio_packet:
+				ret = avcodec_receive_packet( codec, &pkt );
+				if ( ret == AVERROR(EAGAIN) || ret == AVERROR_EOF )
+					pkt.size = 0;
+				else if ( ret < 0 )
+					pkt.size = ret;
+			}
+#else
 			int got_packet = 0;
 			int ret = avcodec_encode_audio2( codec, &pkt, samples ? ctx->audio_avframe : NULL, &got_packet );
 			if ( ret < 0 )
 				pkt.size = ret;
 			else if ( !got_packet )
 				pkt.size = 0;
+#endif
 		}
 
 		if ( pkt.size > 0 )
@@ -1333,10 +1379,14 @@ static int encode_audio(encode_ctx_t* ctx)
 			ctx->error_count = 0;
 			mlt_log_debug( MLT_CONSUMER_SERVICE( ctx->consumer ), "audio stream %d pkt pts %"PRId64" frame_size %d\n",
 				stream->index, pkt.pts, codec->frame_size );
+
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+			goto receive_audio_packet;
+#endif
 		}
 		else if ( pkt.size < 0 )
 		{
-			mlt_log_warning( MLT_CONSUMER_SERVICE( ctx->consumer ), "error with audio encode %d\n", ctx->frame_count );
+			mlt_log_warning( MLT_CONSUMER_SERVICE( ctx->consumer ), "error with audio encode: %d (frame %d)\n", pkt.size, ctx->frame_count );
 			if ( ++ctx->error_count > 2 )
 				return -1;
 		}
@@ -1589,13 +1639,20 @@ static void *consumer_thread( void *arg )
 			{
 				is_multi = 1;
 				enc_ctx->total_channels += j;
-				enc_ctx->audio_st[i] = add_audio_stream( consumer, enc_ctx->oc, audio_codec, j );
+				enc_ctx->audio_st[i] = add_audio_stream( consumer, enc_ctx->oc, audio_codec, j, av_get_default_channel_layout( j ) );
 			}
 		}
 		// single track
 		if ( !is_multi )
 		{
-			enc_ctx->audio_st[0] = add_audio_stream( consumer, enc_ctx->oc, audio_codec, enc_ctx->channels );
+			mlt_channel_layout layout = mlt_channel_layout_id( mlt_properties_get( properties, "channel_layout" ) );
+			if( layout == mlt_channel_auto ||
+				layout == mlt_channel_independent ||
+				mlt_channel_layout_channels( layout ) != enc_ctx->channels )
+			{
+				layout = mlt_channel_layout_default( enc_ctx->channels );
+			}
+			enc_ctx->audio_st[0] = add_audio_stream( consumer, enc_ctx->oc, audio_codec, enc_ctx->channels, mlt_to_av_channel_layout( layout ) );
 			enc_ctx->total_channels = enc_ctx->channels;
 		}
 	}
@@ -1678,7 +1735,7 @@ static void *consumer_thread( void *arg )
 				goto on_fatal_error;
 			}
 		}
-	
+
 	}
 
 	// Last check - need at least one stream
@@ -1689,8 +1746,14 @@ static void *consumer_thread( void *arg )
 	}
 
 	// Allocate picture
-	if ( enc_ctx->video_st )
+	if ( enc_ctx->video_st ) {
 		converted_avframe = alloc_picture( enc_ctx->video_st->codec->pix_fmt, width, height );
+		if ( !converted_avframe ) {
+			mlt_log_error( MLT_CONSUMER_SERVICE( consumer ), "failed to allocate video AVFrame\n" );
+			mlt_events_fire( properties, "consumer-fatal-error", NULL );
+			goto on_fatal_error;
+		}
+	}
 
 	// Allocate audio AVFrame
 	if ( enc_ctx->audio_st[0] )
@@ -1705,7 +1768,9 @@ static void *consumer_thread( void *arg )
 			enc_ctx->audio_avframe->format = c->sample_fmt;
 			enc_ctx->audio_avframe->nb_samples = enc_ctx->audio_input_frame_size;
 			enc_ctx->audio_avframe->channel_layout = c->channel_layout;
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(96<<8)) && LIBAVCODEC_VERSION_MICRO >= 100
 			enc_ctx->audio_avframe->channels = c->channels;
+#endif
 		} else {
             mlt_log_error( MLT_CONSUMER_SERVICE(consumer), "failed to allocate audio AVFrame\n", "" );
 			mlt_events_fire( properties, "consumer-fatal-error", NULL );
@@ -1931,7 +1996,19 @@ static void *consumer_thread( void *arg )
 							c->field_order = (mlt_properties_get_int( frame_properties, "top_field_first" )) ? AV_FIELD_TB : AV_FIELD_BT;
 
 	 					// Encode the image
-#if LIBAVCODEC_VERSION_MAJOR >= 55
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+						ret = avcodec_send_frame( c, converted_avframe );
+						if ( ret < 0 ) {
+							pkt.size = ret;
+						} else {
+receive_video_packet:
+							ret = avcodec_receive_packet( c, &pkt );
+							if ( ret == AVERROR(EAGAIN) || ret == AVERROR_EOF )
+								pkt.size = ret = 0;
+							else if ( ret < 0 )
+								pkt.size = ret;
+						}
+#elif LIBAVCODEC_VERSION_MAJOR >= 55
 						int got_packet;
 						ret = avcodec_encode_video2( c, &pkt, converted_avframe, &got_packet );
 						if ( ret < 0 )
@@ -1965,10 +2042,15 @@ static void *consumer_thread( void *arg )
 								fprintf( mlt_properties_get_data( properties, "_logfile", NULL ), "%s", c->stats_out );
 
 							enc_ctx->error_count = 0;
-	 					} 
+
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+							if ( !ret )
+								goto receive_video_packet;
+#endif
+						}
 						else if ( pkt.size < 0 )
 						{
-							mlt_log_warning( MLT_CONSUMER_SERVICE( consumer ), "error with video encode %d\n", enc_ctx->frame_count );
+							mlt_log_warning( MLT_CONSUMER_SERVICE(consumer), "error with video encode: %d (frame %d)\n", pkt.size, enc_ctx->frame_count );
 							if ( ++enc_ctx->error_count > 2 )
 								goto on_fatal_error;
 							ret = 0;
@@ -1982,7 +2064,7 @@ static void *consumer_thread( void *arg )
 #endif
 					if ( ret )
 					{
-                        mlt_log_fatal( MLT_CONSUMER_SERVICE( consumer ), "error writing video frame\n" , "");
+						mlt_log_fatal( MLT_CONSUMER_SERVICE(consumer), "error writing video frame: %d\n", ret );
 						mlt_events_fire( properties, "consumer-fatal-error", NULL );
 						goto on_fatal_error;
 					}
@@ -2053,7 +2135,16 @@ static void *consumer_thread( void *arg )
 			}
 
 			// Encode the image
-#if LIBAVCODEC_VERSION_MAJOR >= 55
+#if LIBAVCODEC_VERSION_INT >= ((57<<16)+(37<<8)+0)
+			int ret;
+			while ( (ret = avcodec_receive_packet( c, &pkt )) == AVERROR(EAGAIN) ) {
+				ret = avcodec_send_frame( c, NULL );
+				if ( ret < 0 ) {
+					mlt_log_warning( MLT_CONSUMER_SERVICE(consumer), "error with video encode: %s\n", av_err2str(ret) );
+					break;
+				}
+			}
+#elif LIBAVCODEC_VERSION_MAJOR >= 55
 			int got_packet = 0;
 			int ret = avcodec_encode_video2( c, &pkt, NULL, &got_packet );
 			if ( ret < 0 )

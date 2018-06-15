@@ -22,7 +22,7 @@
 
 #ifndef MLT_PROPERTIES_H
 #define MLT_PROPERTIES_H
-#include "mlt_defines.h"
+
 #include "mlt_types.h"
 #include "mlt_events.h"
 #include <stdio.h>
@@ -62,6 +62,7 @@ extern MLT_DECLSPEC int mlt_properties_set_or_default( mlt_properties self, cons
 extern MLT_DECLSPEC int mlt_properties_parse( mlt_properties self, const char *namevalue );
 extern MLT_DECLSPEC char *mlt_properties_get( mlt_properties self, const char *name );
 extern MLT_DECLSPEC char *mlt_properties_get_name( mlt_properties self, int index );
+extern MLT_DECLSPEC char *mlt_properties_get_value_tf( mlt_properties self, int index, mlt_time_format );
 extern MLT_DECLSPEC char *mlt_properties_get_value( mlt_properties self, int index );
 extern MLT_DECLSPEC void *mlt_properties_get_data_at( mlt_properties self, int index, int *size );
 extern MLT_DECLSPEC int mlt_properties_get_int( mlt_properties self, const char *name );
@@ -86,6 +87,7 @@ extern MLT_DECLSPEC mlt_properties mlt_properties_parse_yaml( const char *file )
 extern MLT_DECLSPEC char *mlt_properties_serialise_yaml( mlt_properties self );
 extern MLT_DECLSPEC void mlt_properties_lock( mlt_properties self );
 extern MLT_DECLSPEC void mlt_properties_unlock( mlt_properties self );
+extern MLT_DECLSPEC void mlt_properties_clear( mlt_properties self, const char *name );
 
 extern MLT_DECLSPEC char *mlt_properties_get_time( mlt_properties, const char* name, mlt_time_format );
 extern MLT_DECLSPEC char *mlt_properties_frames_to_time( mlt_properties, mlt_position, mlt_time_format );

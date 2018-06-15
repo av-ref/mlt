@@ -22,7 +22,7 @@
 
 #ifndef MLT_PROPERTY_H
 #define MLT_PROPERTY_H
-#include "mlt_defines.h"
+
 #include "mlt_types.h"
 
 #if defined(__FreeBSD__)
@@ -39,6 +39,7 @@ typedef char* locale_t;
 #endif
 
 extern MLT_DECLSPEC mlt_property mlt_property_init( );
+extern MLT_DECLSPEC void mlt_property_clear( mlt_property self );
 extern MLT_DECLSPEC int mlt_property_set_int( mlt_property self, int value );
 extern MLT_DECLSPEC int mlt_property_set_double( mlt_property self, double value );
 extern MLT_DECLSPEC int mlt_property_set_position( mlt_property self, mlt_position value );
@@ -49,7 +50,9 @@ extern MLT_DECLSPEC int mlt_property_get_int( mlt_property self, double fps, loc
 extern MLT_DECLSPEC double mlt_property_get_double( mlt_property self, double fps, locale_t );
 extern MLT_DECLSPEC mlt_position mlt_property_get_position( mlt_property self, double fps, locale_t );
 extern MLT_DECLSPEC int64_t mlt_property_get_int64( mlt_property self );
+extern MLT_DECLSPEC char *mlt_property_get_string_tf( mlt_property self, mlt_time_format );
 extern MLT_DECLSPEC char *mlt_property_get_string( mlt_property self );
+extern MLT_DECLSPEC char *mlt_property_get_string_l_tf( mlt_property self, locale_t, mlt_time_format );
 extern MLT_DECLSPEC char *mlt_property_get_string_l( mlt_property self, locale_t );
 extern MLT_DECLSPEC void *mlt_property_get_data( mlt_property self, int *length );
 extern MLT_DECLSPEC void mlt_property_close( mlt_property self );
