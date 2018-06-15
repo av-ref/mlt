@@ -4,13 +4,14 @@ find_package(FFmpeg REQUIRED)
 
 set(SRCS
         factory.c
+        common.c
         filter_avcolour_space.c
         filter_avdeinterlace.c
+        filter_swscale.c
+        consumer_avformat.c
+        producer_avformat.c
         filter_avfilter.c
         #filter_avresample.c
-        filter_swscale.c
-        producer_avformat.c
-        consumer_avformat.c
         )
 
 
