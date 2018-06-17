@@ -3,11 +3,11 @@ find_package(sdl REQUIRED)
 
 set(SRCS
         factory.c
-	   consumer_sdl.c 
 	   consumer_sdl_audio.c
+	   consumer_sdl.c 
 	   consumer_sdl_preview.c 
 	   consumer_sdl_still.c 
-# 	   producer_sdl_image.c
+ 	   producer_sdl_image.c
         )
 
 

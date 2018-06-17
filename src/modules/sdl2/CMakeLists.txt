@@ -1,15 +1,16 @@
 ﻿
 
+find_package(sdl2)
+
 set(SRCS
         factory.c
+        common.c
         consumer_sdl2.c
-        ../sdl/consumer_sdl_audio.c
+        consumer_sdl2_audio.c
         )
 
 set(HDRS
         )
-
-find_package(sdl2)
 
 add_library(mltsdl2 MODULE ${SRCS})
 
