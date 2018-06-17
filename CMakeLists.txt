@@ -15,7 +15,7 @@ project(mlt)
 if(WIN32)
     set(CMAKE_INSTALL_PREFIX "E:/workspace_ffmpeg/build")
 else(WIN32)
-    set(CMAKE_INSTALL_PREFIX "/home/tom/workspace_qml/build")
+    set(CMAKE_INSTALL_PREFIX "/home/tony/workspace_mtl/install")
 endif(WIN32)
 
 # ffmpeg
