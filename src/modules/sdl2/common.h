@@ -1,6 +1,7 @@
 /*
- * frei0r_helper.h -- frei0r helper
- * Copyright (c) 2008 Marco Gittler <g.marco@freenet.de>
+ * common.h
+ * Copyright (C) 2018 Meltytech, LLC
+ * Author: Brian Matherly <code@brianmatherly.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +17,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include <framework/mlt.h>
 
-int process_frei0r_item( mlt_service, double position, double time, int length,
-	mlt_frame, uint8_t **image, int *width, int *height );
-void destruct (mlt_properties prop );
+#ifndef COMMON_H
+#define COMMON_H
+
+#include <SDL.h>
+
+SDL_AudioDeviceID sdl2_open_audio( const SDL_AudioSpec* desired, SDL_AudioSpec* obtained );
+
+#endif // COMMON_H

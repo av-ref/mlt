@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "common.h"
+
 // MLT Header files
 #include <framework/mlt_producer.h>
 #include <framework/mlt_frame.h>
@@ -36,6 +38,7 @@
 #include <libavutil/opt.h>
 #include <libavutil/channel_layout.h>
 #include <libavutil/imgutils.h>
+#include <libavutil/version.h>
 
 #ifdef VDPAU
 #  include <libavcodec/vdpau.h>
@@ -580,8 +583,9 @@ static char* parse_url( mlt_profile profile, const char* URL, AVInputFormat **fo
 			}
 			free( width );
 			free( height );
+			result = _strdup(result);
 			free( protocol );
-			return strdup( result );
+			return result;
 		}
 	}
 	free( protocol );
@@ -1490,16 +1494,18 @@ static int convert_image( producer_avformat self, AVFrame *frame, uint8_t *buffe
 			ctx.slice_w = ( width < 1000 )
 				? ( 256 >> frame->interlaced_frame )
 				: ( 512 >> frame->interlaced_frame );
+		} else {
+			ctx.slice_w = width;
 		}
 
 		c = ( width + ctx.slice_w - 1 ) / ctx.slice_w;
 		int last_slice_w = width - ctx.slice_w * (c - 1);
 		c *= frame->interlaced_frame ? 2 : 1;
 
-		if ( (last_slice_w % 8) || !getenv("MLT_AVFORMAT_SLICED_PIXFMT_DISABLE") ) {
-			ctx.slice_w = width;
+		if ( (last_slice_w % 8) == 0 && !getenv("MLT_AVFORMAT_SLICED_PIXFMT_DISABLE") ) {
 			mlt_slices_run_normal( c, sliced_h_pix_fmt_conv_proc, &ctx );
 		} else {
+			ctx.slice_w = width;
 			for ( i = 0 ; i < c; i++ )
 				sliced_h_pix_fmt_conv_proc( i, i, c, &ctx );
 		}
@@ -1691,6 +1697,13 @@ static int producer_get_image( mlt_frame frame, uint8_t **buffer, mlt_image_form
 			*format = mlt_image_rgb24;
 	}
 #endif
+	else if ( codec_context->pix_fmt == AV_PIX_FMT_YUVA444P10LE
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(56,0,0)
+			|| codec_context->pix_fmt == AV_PIX_FMT_GBRAP10LE
+			|| codec_context->pix_fmt == AV_PIX_FMT_GBRAP12LE
+#endif
+			)
+		*format = mlt_image_rgb24a;
 
 	// Duplicate the last image if necessary
 	if ( self->video_frame && self->video_frame->linesize[0]
@@ -2038,11 +2051,12 @@ static void apply_properties( void *obj, mlt_properties properties, int flags )
 	for ( i = 0; i < count; i++ )
 	{
 		const char *opt_name = mlt_properties_get_name( properties, i );
-		const AVOption *opt = av_opt_find( obj, opt_name, NULL, flags, flags );
+		int search_flags = AV_OPT_SEARCH_CHILDREN;
+		const AVOption *opt = av_opt_find( obj, opt_name, NULL, flags, search_flags );
 		if ( opt_name && mlt_properties_get( properties, opt_name ) )
 		{
 			if ( opt )
-				av_opt_set( obj, opt_name, mlt_properties_get( properties, opt_name), 0 );
+				av_opt_set( obj, opt_name, mlt_properties_get( properties, opt_name), search_flags );
 		}
 	}
 }
@@ -2424,6 +2438,7 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 	int channels = codec_context->channels;
 	int audio_used = self->audio_used[ index ];
 	int ret = 0;
+	int discarded = 1;
 
 	while ( pkt.data && pkt.size > 0 )
 	{
@@ -2482,6 +2497,7 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 				}
 			}
 			audio_used += convert_samples;
+			discarded = 0;
 		}
 		
 		// Handle ignore
@@ -2497,7 +2513,7 @@ static int decode_audio( producer_avformat self, int *ignore, AVPacket pkt, int 
 
 	// If we're behind, ignore this packet
 	// Skip this on non-seekable, audio-only inputs.
-	if ( pkt.pts >= 0 && ( self->seekable || self->video_format ) && *ignore == 0 && audio_used > samples / 2 )
+	if ( !discarded && pkt.pts >= 0 && ( self->seekable || self->video_format ) && *ignore == 0 && audio_used > samples / 2 )
 	{
 		int64_t pts = pkt.pts;
 		if ( self->first_pts != AV_NOPTS_VALUE )
@@ -2613,6 +2629,7 @@ static int producer_get_audio( mlt_frame frame, void **buffer, mlt_audio_format 
 		int ret	= 0;
 		int got_audio = 0;
 		AVPacket pkt;
+		mlt_channel_layout layout;
 
 		av_init_packet( &pkt );
 		
@@ -2707,9 +2724,14 @@ static int producer_get_audio( mlt_frame frame, void **buffer, mlt_audio_format 
 			*frequency = self->audio_codec[ index ]->sample_rate;
 			*format = pick_audio_format( self->audio_codec[ index ]->sample_fmt );
 			sizeof_sample = sample_bytes( self->audio_codec[ index ] );
+			if( self->audio_codec[ index ]->channel_layout == 0 )
+				layout = av_channel_layout_to_mlt( av_get_default_channel_layout( self->audio_codec[ index ]->channels ) );
+			else
+				layout = av_channel_layout_to_mlt( self->audio_codec[ index ]->channel_layout );
 		}
 		else if ( self->audio_index == INT_MAX )
 		{
+			layout = mlt_channel_independent;
 			for ( index = 0; index < index_max; index++ )
 				if ( self->audio_codec[ index ] )
 				{
@@ -2719,6 +2741,7 @@ static int producer_get_audio( mlt_frame frame, void **buffer, mlt_audio_format 
 					break;
 				}
 		}
+		mlt_properties_set( MLT_FRAME_PROPERTIES(frame), "channel_layout", mlt_channel_layout_name( layout ) );
 
 		// Allocate and set the frame's audio buffer
 		int size = mlt_audio_format_size( *format, *samples, *channels );

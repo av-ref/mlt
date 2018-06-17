@@ -1,6 +1,7 @@
 /*
- * frei0r_helper.h -- frei0r helper
- * Copyright (c) 2008 Marco Gittler <g.marco@freenet.de>
+ * common.h
+ * Copyright (C) 2018 Meltytech, LLC
+ * Author: Brian Matherly <code@brianmatherly.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +17,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+#ifndef COMMON_H
+#define COMMON_H
+
 #include <framework/mlt.h>
 
-int process_frei0r_item( mlt_service, double position, double time, int length,
-	mlt_frame, uint8_t **image, int *width, int *height );
-void destruct (mlt_properties prop );
+int mlt_to_av_sample_format( mlt_audio_format format );
+int64_t mlt_to_av_channel_layout( mlt_channel_layout layout );
+mlt_channel_layout av_channel_layout_to_mlt( int64_t layout );
+mlt_channel_layout get_channel_layout_or_default( const char* name, int channels );
+
+#endif // COMMON_H
